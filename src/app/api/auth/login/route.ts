@@ -49,7 +49,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       response.cookies.set(COOKIE_NAME, sessionToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: process.env.COOKIE_SECURE === 'true',
         sameSite: 'lax',
         maxAge: MAX_AGE,
         path: '/',
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     response.cookies.set(COOKIE_NAME, sessionToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.COOKIE_SECURE === 'true',
       sameSite: 'lax',
       maxAge: MAX_AGE,
       path: '/',
