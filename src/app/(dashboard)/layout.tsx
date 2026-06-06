@@ -57,7 +57,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
         </nav>
 
         <div className="border-t border-slate-200 px-3 py-4 space-y-1">
-          <p className="px-3 py-1 text-xs text-slate-400 truncate">{session.email}</p>
+          <p className="px-3 py-1 text-xs text-slate-400 truncate">{session.username}</p>
           <LogoutButton />
         </div>
       </aside>

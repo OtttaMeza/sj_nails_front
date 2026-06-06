@@ -1,6 +1,6 @@
-import { ApiError } from '@/lib/types'
+import { ApiError, ApiResponse } from '@/lib/types'
 
-const BASE_URL = process.env.BACKEND_INTERNAL_URL ?? 'http://localhost:8080'
+const BASE_URL = process.env.BACKEND_INTERNAL_URL ?? 'http://localhost:9090'
 
 interface FetchOptions extends Omit<RequestInit, 'body'> {
   token?: string
@@ -25,8 +25,8 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
   if (!response.ok) {
     let message = response.statusText
     try {
-      const errorBody = await response.json()
-      message = errorBody?.message ?? errorBody?.error ?? message
+      const errorBody = (await response.json()) as ApiResponse<null>
+      message = errorBody?.mensaje ?? message
     } catch {
       // mantiene statusText si el body no es JSON
     }
@@ -35,5 +35,6 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
     throw error
   }
 
-  return response.json() as Promise<T>
+  const wrapper = (await response.json()) as ApiResponse<T>
+  return wrapper.data
 }

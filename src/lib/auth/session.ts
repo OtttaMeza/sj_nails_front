@@ -4,8 +4,8 @@ import { redirect } from 'next/navigation'
 
 export interface Session {
   id: string
-  email: string
-  role: 'ADMIN'
+  username: string
+  role: 'SUPER_ADMIN' | 'ADMIN' | 'USER'
   salonId: number
 }
 
@@ -34,20 +34,21 @@ export async function getSession(): Promise<Session | null> {
 
     const { payload } = await jwtVerify(token, getSecretKey())
 
+    const validRoles = ['SUPER_ADMIN', 'ADMIN', 'USER']
     if (
       typeof payload.id !== 'string' ||
-      typeof payload.email !== 'string' ||
-      payload.role !== 'ADMIN' ||
-      typeof payload.salonId !== 'number'
+      typeof payload.username !== 'string' ||
+      typeof payload.role !== 'string' ||
+      !validRoles.includes(payload.role)
     ) {
       return null
     }
 
     return {
       id: payload.id,
-      email: payload.email,
-      role: 'ADMIN',
-      salonId: payload.salonId,
+      username: payload.username,
+      role: payload.role as Session['role'],
+      salonId: typeof payload.salonId === 'number' ? payload.salonId : 1,
     }
   } catch {
     return null

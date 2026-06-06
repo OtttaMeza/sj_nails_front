@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 const loginSchema = z.object({
-  email: z.string().email('Ingresa un email válido'),
+  username: z.string().min(1, 'El usuario es requerido'),
   password: z.string().min(1, 'La contraseña es requerida'),
 })
 
@@ -55,20 +55,20 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
           <div className="space-y-1">
-            <label htmlFor="email" className="block text-sm font-medium text-slate-700">
-              Email
+            <label htmlFor="username" className="block text-sm font-medium text-slate-700">
+              Usuario
             </label>
             <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              {...register('email')}
+              id="username"
+              type="text"
+              autoComplete="username"
+              {...register('username')}
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent disabled:opacity-50"
-              placeholder="admin@sjnails.com"
+              placeholder="superadmin"
               disabled={isSubmitting}
             />
-            {errors.email && (
-              <p className="text-xs text-red-600 mt-1">{errors.email.message}</p>
+            {errors.username && (
+              <p className="text-xs text-red-600 mt-1">{errors.username.message}</p>
             )}
           </div>
 

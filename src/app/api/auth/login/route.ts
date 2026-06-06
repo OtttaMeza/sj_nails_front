@@ -2,16 +2,20 @@ import { signSession, COOKIE_NAME, MAX_AGE } from '@/lib/auth/session'
 import { NextRequest, NextResponse } from 'next/server'
 
 interface LoginBody {
-  email: string
+  username: string
   password: string
 }
 
-interface BackendAuthResponse {
+interface BackendAuthData {
   token: string
-  id: string
-  email: string
+  username: string
   role: string
-  salonId: number
+}
+
+interface BackendApiResponse {
+  codigo: number
+  mensaje: string
+  data: BackendAuthData
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -23,26 +27,26 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: false, error: 'Cuerpo de solicitud inválido' }, { status: 400 })
   }
 
-  const { email, password } = body
+  const { username, password } = body
 
-  if (!email || !password) {
-    return NextResponse.json({ ok: false, error: 'Email y contraseña son requeridos' }, { status: 400 })
+  if (!username || !password) {
+    return NextResponse.json({ ok: false, error: 'Usuario y contraseña son requeridos' }, { status: 400 })
   }
 
   try {
     if (process.env.MOCK_AUTH === 'true') {
-      if (email !== 'admin@sjnails.com' || password !== 'admin123') {
+      if (username !== 'superadmin' || password !== 'Admin@2024!') {
         return NextResponse.json({ ok: false, error: 'Credenciales inválidas' }, { status: 401 })
       }
 
-      const token = await signSession({ id: '1', email, role: 'ADMIN', salonId: 1 })
+      const sessionToken = await signSession({ id: '1', username, role: 'SUPER_ADMIN', salonId: 1 })
 
       const response = NextResponse.json({
         ok: true,
-        user: { id: '1', email, role: 'ADMIN' },
+        user: { username, role: 'SUPER_ADMIN' },
       })
 
-      response.cookies.set(COOKIE_NAME, token, {
+      response.cookies.set(COOKIE_NAME, sessionToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
@@ -53,36 +57,35 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return response
     }
 
-    const backendUrl = process.env.BACKEND_INTERNAL_URL ?? 'http://localhost:8080'
+    const backendUrl = process.env.BACKEND_INTERNAL_URL ?? 'http://localhost:9090'
     const backendResponse = await fetch(`${backendUrl}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ username, password }),
     })
 
     if (!backendResponse.ok) {
-      const errorData = await backendResponse.json().catch(() => ({}))
-      const errorMessage =
-        (errorData as { message?: string; error?: string })?.message ??
-        (errorData as { message?: string; error?: string })?.error ??
-        'Credenciales inválidas'
-      return NextResponse.json({ ok: false, error: errorMessage }, { status: backendResponse.status })
+      const errorData = (await backendResponse.json().catch(() => ({}))) as { mensaje?: string }
+      return NextResponse.json(
+        { ok: false, error: errorData?.mensaje ?? 'Credenciales inválidas' },
+        { status: backendResponse.status },
+      )
     }
 
-    const data = (await backendResponse.json()) as BackendAuthResponse
-    const token = await signSession({
-      id: data.id,
-      email: data.email,
-      role: 'ADMIN',
-      salonId: data.salonId,
+    const { data } = (await backendResponse.json()) as BackendApiResponse
+    const sessionToken = await signSession({
+      id: data.username,
+      username: data.username,
+      role: data.role as 'SUPER_ADMIN' | 'ADMIN' | 'USER',
+      salonId: 1,
     })
 
     const response = NextResponse.json({
       ok: true,
-      user: { id: data.id, email: data.email, role: data.role },
+      user: { username: data.username, role: data.role },
     })
 
-    response.cookies.set(COOKIE_NAME, token, {
+    response.cookies.set(COOKIE_NAME, sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

@@ -57,6 +57,14 @@ export interface SalonServiceResponse {
   active: boolean
 }
 
+export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'USER'
+
+export interface ApiResponse<T> {
+  codigo: number
+  mensaje: string
+  data: T
+}
+
 export interface ApiError {
   status: number
   message: string
