@@ -25,8 +25,8 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
   if (!response.ok) {
     let message = response.statusText
     try {
-      const errorBody = (await response.json()) as ApiResponse<null> | { mensaje?: string }
-      message = (errorBody as ApiResponse<null>)?.mensaje ?? message
+      const errorBody = (await response.json()) as ApiResponse<null>
+      message = errorBody?.mensaje ?? message
     } catch {
       // mantiene statusText si el body no es JSON
     }
@@ -35,5 +35,6 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
     throw error
   }
 
-  return response.json() as Promise<T>
+  const wrapper = (await response.json()) as ApiResponse<T>
+  return wrapper.data
 }
