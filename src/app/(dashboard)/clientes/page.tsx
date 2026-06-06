@@ -1,20 +1,19 @@
-import { requireSession } from '@/lib/auth/session'
+import { getClients } from '@/lib/api/clients'
+import { getSession } from '@/lib/auth/session'
+import { ClientResponse } from '@/lib/types'
+import { redirect } from 'next/navigation'
+import ClientesClient from './ClientesClient'
 
 export default async function ClientesPage() {
-  await requireSession()
+  const session = await getSession()
+  if (!session) redirect('/login')
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Clientes</h1>
-        <p className="text-slate-500 mt-1">Gestion de clientes del salon</p>
-      </div>
+  let clients: ClientResponse[] = []
+  try {
+    clients = await getClients(session.backendToken)
+  } catch {
+    clients = []
+  }
 
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
-        <p className="text-slate-500 text-sm">
-          Proximamente: CRUD de clientes e historial de citas.
-        </p>
-      </div>
-    </div>
-  )
+  return <ClientesClient initialClients={clients} />
 }

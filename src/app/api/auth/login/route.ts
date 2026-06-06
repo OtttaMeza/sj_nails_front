@@ -39,7 +39,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json({ ok: false, error: 'Credenciales inválidas' }, { status: 401 })
       }
 
-      const sessionToken = await signSession({ id: '1', username, role: 'SUPER_ADMIN', salonId: 1 })
+      const mockJwt = 'mock-token'
+      const sessionToken = await signSession({ id: '1', username, role: 'SUPER_ADMIN', salonId: 1, backendToken: mockJwt })
 
       const response = NextResponse.json({
         ok: true,
@@ -78,6 +79,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       username: data.username,
       role: data.role as 'SUPER_ADMIN' | 'ADMIN' | 'USER',
       salonId: 1,
+      backendToken: data.token,
     })
 
     const response = NextResponse.json({

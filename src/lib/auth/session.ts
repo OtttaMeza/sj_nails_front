@@ -7,6 +7,7 @@ export interface Session {
   username: string
   role: 'SUPER_ADMIN' | 'ADMIN' | 'USER'
   salonId: number
+  backendToken: string
 }
 
 const COOKIE_NAME = process.env.JWT_COOKIE_NAME ?? 'sj_session'
@@ -39,7 +40,8 @@ export async function getSession(): Promise<Session | null> {
       typeof payload.id !== 'string' ||
       typeof payload.username !== 'string' ||
       typeof payload.role !== 'string' ||
-      !validRoles.includes(payload.role)
+      !validRoles.includes(payload.role) ||
+      typeof payload.backendToken !== 'string'
     ) {
       return null
     }
@@ -49,6 +51,7 @@ export async function getSession(): Promise<Session | null> {
       username: payload.username,
       role: payload.role as Session['role'],
       salonId: typeof payload.salonId === 'number' ? payload.salonId : 1,
+      backendToken: payload.backendToken,
     }
   } catch {
     return null
