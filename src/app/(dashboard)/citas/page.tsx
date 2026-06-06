@@ -1,20 +1,36 @@
 import { requireSession } from '@/lib/auth/session'
+import { getAppointments } from '@/lib/api/appointments'
+import { getClients } from '@/lib/api/clients'
+import { getServices } from '@/lib/api/services'
+import { AppointmentResponse, ClientResponse, SalonServiceResponse } from '@/lib/types'
+import CitasClient from './CitasClient'
 
 export default async function CitasPage() {
-  await requireSession()
+  const session = await requireSession()
+
+  let appointments: AppointmentResponse[] = []
+  let clients: ClientResponse[] = []
+  let services: SalonServiceResponse[] = []
+
+  try {
+    const token = session.backendToken
+    const [appsRes, clientsRes, servicesRes] = await Promise.all([
+      getAppointments(token),
+      getClients(token),
+      getServices(token),
+    ])
+    appointments = appsRes ?? []
+    clients = clientsRes ?? []
+    services = servicesRes ?? []
+  } catch (err) {
+    console.error('Error fetching appointments page data:', err)
+  }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Citas</h1>
-        <p className="text-slate-500 mt-1">Gestion de citas del salon</p>
-      </div>
-
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
-        <p className="text-slate-500 text-sm">
-          Proximamente: listado de citas, cambio de estado y cancelacion.
-        </p>
-      </div>
-    </div>
+    <CitasClient
+      initialAppointments={appointments}
+      initialClients={clients}
+      initialServices={services}
+    />
   )
 }
