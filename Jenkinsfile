@@ -46,6 +46,9 @@ pipeline {
                     string(credentialsId: 'jwt-secret-front', variable: 'JWT_SECRET')
                 ]) {
                     sh """
+                        ssh -i \$SSH_KEY -o StrictHostKeyChecking=no ${HETZNER_USER}@${HETZNER_HOST} \
+                            "mkdir -p ${DEPLOY_PATH}"
+
                         scp -i \$SSH_KEY -o StrictHostKeyChecking=no \
                             docker-compose.prod.yml \
                             ${HETZNER_USER}@${HETZNER_HOST}:${DEPLOY_PATH}/
