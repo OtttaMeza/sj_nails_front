@@ -9,10 +9,17 @@ function getSecretKey(): Uint8Array {
   return new TextEncoder().encode(secret)
 }
 
-async function isValidToken(token: string): Promise<boolean> {
+const VALID_ROLES = new Set(['SUPER_ADMIN', 'ADMIN', 'USER'])
+
+async function isValidSession(token: string): Promise<boolean> {
   try {
-    await jwtVerify(token, getSecretKey())
-    return true
+    const { payload } = await jwtVerify(token, getSecretKey())
+    return (
+      typeof payload.username === 'string' &&
+      typeof payload.role === 'string' &&
+      VALID_ROLES.has(payload.role) &&
+      typeof payload.backendToken === 'string'
+    )
   } catch {
     return false
   }
@@ -23,7 +30,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   const token = request.cookies.get(COOKIE_NAME)?.value
 
   const isLoginPage = pathname === '/login'
-  const authenticated = token ? await isValidToken(token) : false
+  const authenticated = token ? await isValidSession(token) : false
 
   if (isLoginPage) {
     if (authenticated) {
