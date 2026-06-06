@@ -1,21 +1,26 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Cormorant_Garamond, Raleway } from 'next/font/google'
 import { Providers } from '@/components/providers'
 import './globals.css'
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
+  variable: '--font-display',
+  display: 'swap',
+  weight: ['300', '400', '500', '600', '700'],
+  style: ['normal', 'italic'],
 })
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const raleway = Raleway({
   subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
+  weight: ['300', '400', '500', '600', '700', '800'],
 })
 
 export const metadata: Metadata = {
-  title: 'SJ Nails Admin',
-  description: 'Panel administrativo Sandy Jervis',
+  title: 'SJ Estudio de Uñas — Panel de Gestión',
+  description: 'Plataforma de gestión de citas para salones de belleza, estética y cuidado personal.',
 }
 
 interface RootLayoutProps {
@@ -25,7 +30,11 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="es">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
+      <body
+        className={`${cormorant.variable} ${raleway.variable} antialiased text-slate-900`}
+        style={{ fontFamily: 'var(--font-sans), system-ui, sans-serif' }}
+        suppressHydrationWarning
+      >
         <Providers>{children}</Providers>
       </body>
     </html>
