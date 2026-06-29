@@ -12,9 +12,10 @@ export default async function HorariosPage() {
 
   try {
     const token = session.backendToken
+    const whatsapp = session.username
     const [schedulesRes, servicesRes] = await Promise.all([
       getSchedules(token),
-      getServices(token),
+      getServices(whatsapp, token),
     ])
     schedules = schedulesRes ?? []
     services = servicesRes ?? []

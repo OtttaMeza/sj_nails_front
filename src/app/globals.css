@@ -19,6 +19,16 @@
   --color-brand-error: #F04438;
   --color-brand-warning: #F79009;
 
+  /* Aliases de compatibilidad para tokens legacy */
+  --color-brand-primary-100: #EDE9FF;
+  --color-brand-primary-400: #9B6DFF;
+  --color-brand-primary-500: #684EFF;
+  --color-brand-primary-600: #684EFF;
+  --color-brand-primary-700: #5031E2;
+  --color-brand-primary-800: #4228C5;
+  --color-brand-accent-500: #F2C94C;
+  --color-brand-accent-600: #F2C94C;
+
   --font-display: var(--font-display), "Playfair Display", serif;
   --font-sans: var(--font-sans), "Inter", sans-serif;
 

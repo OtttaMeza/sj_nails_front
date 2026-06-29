@@ -231,7 +231,7 @@ export default function CitasClient({
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-primary-600 px-5 py-3 text-sm font-bold text-white hover:bg-brand-primary-700 smooth-transition shadow-md shadow-brand-primary-500/10"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-primary px-5 py-3 text-sm font-bold text-white hover:bg-brand-primary-dark smooth-transition shadow-md shadow-brand-primary/10 cursor-pointer"
         >
           <Plus className="w-5 h-5" />
           <span>Programar Turno</span>
@@ -601,7 +601,7 @@ export default function CitasClient({
                 <button
                   type="submit"
                   disabled={isPending || !selectedSlot}
-                  className="flex-1 rounded-xl bg-brand-primary-600 px-4 py-3 text-xs font-bold text-white hover:bg-brand-primary-700 disabled:opacity-50 disabled:cursor-not-allowed smooth-transition shadow-sm"
+                  className="flex-1 rounded-xl bg-brand-primary px-4 py-3 text-xs font-bold text-white hover:bg-brand-primary-dark disabled:opacity-50 disabled:cursor-not-allowed smooth-transition shadow-sm"
                 >
                   {isPending ? 'Guardando...' : 'Agendar Cita'}
                 </button>

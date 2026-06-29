@@ -14,10 +14,11 @@ export default async function DashboardPage() {
 
   try {
     const token = session.backendToken
+    const whatsapp = session.username
     const [appsRes, clientsRes, servicesRes] = await Promise.all([
       getAppointments(token),
       getClients(token),
-      getServices(token),
+      getServices(whatsapp, token),
     ])
     appointments = appsRes ?? []
     clients = clientsRes ?? []

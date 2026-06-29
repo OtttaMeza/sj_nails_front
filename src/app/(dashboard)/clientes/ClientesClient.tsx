@@ -138,7 +138,7 @@ export default function ClientesClient({ initialClients }: Props) {
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-primary-600 px-5 py-3 text-sm font-bold text-white hover:bg-brand-primary-700 smooth-transition shadow-md shadow-brand-primary-500/10"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-primary px-5 py-3 text-sm font-bold text-white hover:bg-brand-primary-dark smooth-transition shadow-md shadow-brand-primary/10"
         >
           <Plus className="w-5 h-5" />
           <span>Nuevo Cliente</span>
@@ -422,7 +422,7 @@ export default function ClientesClient({ initialClients }: Props) {
                 <label className="block text-xs font-bold text-slate-900 uppercase">Nombre completo *</label>
                 <input
                   {...register('fullName')}
-                  className="w-full rounded-xl border border-slate-355 bg-white px-3 py-3 text-xs font-semibold text-slate-955 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 smooth-transition shadow-sm"
+                  className="w-full rounded-xl border border-slate-355 bg-white px-3 py-3 text-xs font-semibold text-slate-955 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary smooth-transition shadow-sm"
                   placeholder="Ej. María García"
                 />
                 {errors.fullName && <p className="text-[10px] text-rose-700 font-bold mt-0.5">{errors.fullName.message}</p>}
@@ -434,7 +434,7 @@ export default function ClientesClient({ initialClients }: Props) {
                 <input
                   {...register('phone')}
                   type="tel"
-                  className="w-full rounded-xl border border-slate-355 bg-white px-3 py-3 text-xs font-semibold text-slate-955 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 smooth-transition shadow-sm"
+                  className="w-full rounded-xl border border-slate-355 bg-white px-3 py-3 text-xs font-semibold text-slate-955 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary smooth-transition shadow-sm"
                   placeholder="Ej. 3001234567"
                 />
                 {errors.phone && <p className="text-[10px] text-rose-700 font-bold mt-0.5">{errors.phone.message}</p>}
@@ -446,7 +446,7 @@ export default function ClientesClient({ initialClients }: Props) {
                 <input
                   {...register('email')}
                   type="email"
-                  className="w-full rounded-xl border border-slate-355 bg-white px-3 py-3 text-xs font-semibold text-slate-955 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 smooth-transition shadow-sm"
+                  className="w-full rounded-xl border border-slate-355 bg-white px-3 py-3 text-xs font-semibold text-slate-955 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary smooth-transition shadow-sm"
                   placeholder="Ej. maria@example.com"
                 />
                 {errors.email && <p className="text-[10px] text-rose-700 font-bold mt-0.5">{errors.email.message}</p>}
@@ -458,7 +458,7 @@ export default function ClientesClient({ initialClients }: Props) {
                 <input
                   {...register('birthday')}
                   type="date"
-                  className="w-full rounded-xl border border-slate-355 bg-white px-3 py-3 text-xs font-semibold text-slate-955 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 smooth-transition shadow-sm"
+                  className="w-full rounded-xl border border-slate-355 bg-white px-3 py-3 text-xs font-semibold text-slate-955 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary smooth-transition shadow-sm"
                 />
               </div>
 
@@ -468,7 +468,7 @@ export default function ClientesClient({ initialClients }: Props) {
                 <textarea
                   {...register('notes')}
                   rows={2}
-                  className="w-full rounded-xl border border-slate-355 bg-white px-3 py-3 text-xs font-semibold text-slate-955 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 resize-none smooth-transition shadow-sm"
+                  className="w-full rounded-xl border border-slate-355 bg-white px-3 py-3 text-xs font-semibold text-slate-955 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary resize-none smooth-transition shadow-sm"
                   placeholder="Ej. Prefiere café negro, alérgica a esmaltes acrílicos..."
                 />
               </div>
@@ -506,7 +506,7 @@ export default function ClientesClient({ initialClients }: Props) {
                 <button
                   type="submit"
                   disabled={isSubmitting || isPending}
-                  className="flex-1 rounded-xl bg-brand-primary-600 px-4 py-3 text-xs font-bold text-white hover:bg-brand-primary-700 disabled:opacity-50 disabled:cursor-not-allowed smooth-transition shadow-sm"
+                  className="flex-1 rounded-xl bg-brand-primary px-4 py-3 text-xs font-bold text-white hover:bg-brand-primary-dark disabled:opacity-50 disabled:cursor-not-allowed smooth-transition shadow-sm"
                 >
                   {isSubmitting ? 'Registrando...' : 'Registrar'}
                 </button>
