@@ -12,20 +12,22 @@ export default async function CitasPage() {
   let clients: ClientResponse[] = []
   let services: SalonServiceResponse[] = []
 
-  try {
-    const token = session.backendToken
-    const whatsapp = session.username
-    const [appsRes, clientsRes, servicesRes] = await Promise.all([
-      getAppointments(token),
-      getClients(token),
-      getServices(whatsapp, token),
-    ])
-    appointments = appsRes ?? []
-    clients = clientsRes ?? []
-    services = servicesRes ?? []
-  } catch (err) {
-    console.error('Error fetching appointments page data:', err)
-  }
+  const token = session.backendToken
+
+  const [appsRes, clientsRes, servicesRes] = await Promise.allSettled([
+    getAppointments(token),
+    getClients(token),
+    getServices(token),
+  ])
+
+  if (appsRes.status === 'fulfilled') appointments = appsRes.value ?? []
+  else console.error('Error fetching appointments:', appsRes.reason)
+
+  if (clientsRes.status === 'fulfilled') clients = clientsRes.value ?? []
+  else console.error('Error fetching clients:', clientsRes.reason)
+
+  if (servicesRes.status === 'fulfilled') services = servicesRes.value ?? []
+  else console.error('Error fetching services:', servicesRes.reason)
 
   return (
     <CitasClient

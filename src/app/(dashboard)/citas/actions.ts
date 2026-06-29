@@ -2,8 +2,10 @@
 
 import { createAppointment, cancelAppointment } from '@/lib/api/appointments'
 import { getAvailableSlots } from '@/lib/api/schedules'
+import { getClients } from '@/lib/api/clients'
+import { getServices } from '@/lib/api/services'
 import { getSession } from '@/lib/auth/session'
-import { AppointmentResponse, CreateAppointmentRequest } from '@/lib/types'
+import { AppointmentResponse, ClientResponse, CreateAppointmentRequest, SalonServiceResponse } from '@/lib/types'
 import { revalidatePath } from 'next/cache'
 
 interface CreateActionResult {
@@ -68,5 +70,51 @@ export async function getAvailableSlotsAction(
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Error al obtener horarios disponibles'
     return { ok: false, error: message }
+  }
+}
+
+interface GetClientsResult {
+  ok: boolean
+  clients?: ClientResponse[]
+  error?: string
+}
+
+interface GetServicesResult {
+  ok: boolean
+  services?: SalonServiceResponse[]
+  error?: string
+}
+
+function extractError(err: unknown, fallback: string): string {
+  if (err instanceof Error) return err.message
+  if (typeof err === 'object' && err !== null && 'message' in err) {
+    return String((err as { message: unknown }).message)
+  }
+  return fallback
+}
+
+export async function getClientsAction(): Promise<GetClientsResult> {
+  const session = await getSession()
+  if (!session) return { ok: false, error: 'No autenticado' }
+
+  try {
+    const clients = await getClients(session.backendToken)
+    return { ok: true, clients }
+  } catch (err) {
+    console.error('[getClientsAction]', err)
+    return { ok: false, error: extractError(err, 'Error al obtener clientes') }
+  }
+}
+
+export async function getServicesAction(): Promise<GetServicesResult> {
+  const session = await getSession()
+  if (!session) return { ok: false, error: 'No autenticado' }
+
+  try {
+    const services = await getServices(session.backendToken)
+    return { ok: true, services }
+  } catch (err) {
+    console.error('[getServicesAction]', err)
+    return { ok: false, error: extractError(err, 'Error al obtener servicios') }
   }
 }

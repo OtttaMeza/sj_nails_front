@@ -10,18 +10,18 @@ export default async function HorariosPage() {
   let schedules: Schedule[] = []
   let services: SalonServiceResponse[] = []
 
-  try {
-    const token = session.backendToken
-    const whatsapp = session.username
-    const [schedulesRes, servicesRes] = await Promise.all([
-      getSchedules(token),
-      getServices(whatsapp, token),
-    ])
-    schedules = schedulesRes ?? []
-    services = servicesRes ?? []
-  } catch (err) {
-    console.error('Error fetching schedules page data:', err)
-  }
+  const token = session.backendToken
+
+  const [schedulesRes, servicesRes] = await Promise.allSettled([
+    getSchedules(token),
+    getServices(token),
+  ])
+
+  if (schedulesRes.status === 'fulfilled') schedules = schedulesRes.value ?? []
+  else console.error('Error fetching schedules:', schedulesRes.reason)
+
+  if (servicesRes.status === 'fulfilled') services = servicesRes.value ?? []
+  else console.error('Error fetching services:', servicesRes.reason)
 
   return <HorariosClient schedules={schedules} services={services} />
 }
