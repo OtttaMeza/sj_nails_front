@@ -1,31 +1,27 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-rose-50: #fff1f2;
-  --color-brand-rose-100: #ffe4e6;
-  --color-brand-rose-200: #fecdd3;
-  --color-brand-rose-300: #fda4af;
-  --color-brand-rose-400: #fb7185;
-  --color-brand-rose-500: #ec4899; /* Pink-500 */
-  --color-brand-rose-600: #db2777; /* Pink-600 */
-  --color-brand-rose-700: #be123c;
-  --color-brand-rose-800: #9f1239;
-  --color-brand-rose-900: #881337;
-  
-  --color-brand-gold-50: #fffbeb;
-  --color-brand-gold-100: #fef3c7;
-  --color-brand-gold-200: #fde68a;
-  --color-brand-gold-300: #fcd34d;
-  --color-brand-gold-400: #fbbf24;
-  --color-brand-gold-500: #f59e0b; /* Amber-500 */
-  --color-brand-gold-600: #d97706; /* Amber-600 */
-  --color-brand-gold-700: #b45309;
-  --color-brand-gold-800: #92400e;
-  --color-brand-gold-900: #78350f;
+  --color-brand-primary: #684EFF;
+  --color-brand-primary-light: #9B6DFF;
+  --color-brand-primary-dark: #5031E2;
+  --color-brand-primary-hover: #7B57FF;
+  --color-brand-secondary: #FF6FB3;
+  --color-brand-premium: #F2C94C;
+  --color-brand-dark: #0F1021;
+  --color-brand-dark-2: #17192E;
+  --color-brand-dark-3: #111321;
+  --color-brand-light: #FAFAFC;
+  --color-brand-card: #FFFFFF;
+  --color-brand-text: #1D2033;
+  --color-brand-text-muted: #667085;
+  --color-brand-border: #E5E7F2;
+  --color-brand-success: #12B76A;
+  --color-brand-error: #F04438;
+  --color-brand-warning: #F79009;
 
-  --color-brand-charcoal-50: #f8fafc;
-  --color-brand-charcoal-900: #0f172a;
-  
+  --font-display: var(--font-display), "Playfair Display", serif;
+  --font-sans: var(--font-sans), "Inter", sans-serif;
+
   --animate-float: float 4s ease-in-out infinite;
   --animate-pulse-subtle: pulse-subtle 2.5s ease-in-out infinite;
 
@@ -39,52 +35,50 @@
   }
 }
 
-/* Custom premium styling */
+.brand-gradient-bg {
+  background: linear-gradient(135deg, #0F1021 0%, #17192E 100%);
+}
+
+.brand-btn-primary {
+  background: linear-gradient(135deg, #684EFF 0%, #FF6FB3 100%);
+  transition: all 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.brand-btn-primary:not(:disabled):hover {
+  background: linear-gradient(135deg, #7B57FF 0%, #FF85C0 100%);
+  box-shadow: 0 8px 24px rgba(104, 78, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.brand-input {
+  border: 1.5px solid #E5E7F2;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+.brand-input:focus {
+  border-color: #684EFF;
+  box-shadow: 0 0 0 3px rgba(104, 78, 255, 0.12);
+  outline: none;
+}
+
 .glass-panel {
-  background: rgba(255, 255, 255, 0.95); /* Más opaco para resaltar el texto */
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.93); /* Más opaco para contraste superior */
+  background: rgba(255, 255, 255, 0.93);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.8); /* Borde Slate-200 más visible */
+  border: 1px solid rgba(226, 232, 240, 0.8);
   box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
 }
 
 .glass-sidebar {
-  background: #0f172a; /* Slate 900 sólido para contraste perfecto del texto del menú */
+  background: #0F1021;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.premium-gradient {
-  background: linear-gradient(135deg, #ec4899 0%, #db2777 50%, #f59e0b 100%); /* Colores más vivos */
-}
-
-.gold-gradient {
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
-}
-
-.rose-gradient {
-  background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); /* Rosa más vivo */
-}
-
-.dark-gradient {
-  background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); /* Índigo profundo + Slate 900 */
-}
-
-.glow-rose {
-  box-shadow: 0 0 20px rgba(236, 72, 153, 0.4);
-}
-
-.glow-gold {
-  box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
-}
-
-/* Custom transitions and scrollbar */
 .smooth-transition {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -97,69 +91,41 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(15, 23, 42, 0.2);
+  background: rgba(107, 78, 255, 0.2);
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(15, 23, 42, 0.4);
-}
-
-/* Base modifications */
-:root {
-  --background: 210 40% 98%; /* Slate-50 */
-  --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --primary: 327.4 83.3% 47.1%; /* Pink-600 brillante */
-  --primary-foreground: 210 40% 98%;
-  --secondary: 37.7 92.1% 50.2%; /* Amber-500 brillante */
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 327.4 100% 96.3%; /* Pink-50 */
-  --accent-foreground: 327.4 83.3% 47.1%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 327.4 83.3% 47.1%;
-  --radius: 1rem;
+  background: rgba(107, 78, 255, 0.4);
 }
 
 body {
-  background: #f1f5f9; /* Slate-100: fondo con leve textura que destaca cards blancas */
-  color: #0f172a; /* Slate-950: texto base con contraste WCAG AAA */
+  background: #FAFAFC;
+  color: #1D2033;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: "rlig" 1, "calt" 1; /* Ligaduras Inter */
+  font-feature-settings: "rlig" 1, "calt" 1;
 }
 
-/* Headings siempre en negro profundo */
 h1, h2, h3, h4, h5, h6 {
-  color: #020617; /* Slate-950 */
+  color: #1D2033;
   letter-spacing: -0.02em;
 }
 
-/* Links de tabla y navegación resaltados */
 a {
   color: inherit;
 }
 
-/* Inputs más definidos */
 input, select, textarea {
-  color: #020617;
+  color: #1D2033;
   font-weight: 600;
 }
 
 input::placeholder, textarea::placeholder {
-  color: #94a3b8; /* Slate-400 */
+  color: #667085;
   font-weight: 400;
 }
 
-/* Mejorar legibilidad de badges y pills */
 .badge-amber {
   background-color: #fef3c7;
   color: #78350f;
@@ -176,8 +142,8 @@ input::placeholder, textarea::placeholder {
 
 .badge-rose {
   background-color: #fce7f3;
-  color: #881337;
-  border-color: #fda4af;
+  color: #9d174d;
+  border-color: #fbcfe8;
   font-weight: 800;
 }
 

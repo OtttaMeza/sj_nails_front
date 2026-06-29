@@ -138,7 +138,7 @@ export default function ClientesClient({ initialClients }: Props) {
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-rose-600 to-brand-rose-500 px-5 py-3 text-sm font-bold text-white hover:from-brand-rose-700 hover:to-brand-rose-600 smooth-transition shadow-md shadow-brand-rose-500/10"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-primary-600 px-5 py-3 text-sm font-bold text-white hover:bg-brand-primary-700 smooth-transition shadow-md shadow-brand-primary-500/10"
         >
           <Plus className="w-5 h-5" />
           <span>Nuevo Cliente</span>
@@ -281,7 +281,7 @@ export default function ClientesClient({ initialClients }: Props) {
             {/* Cabecera Drawer */}
             <div className="h-20 border-b border-slate-200 px-6 flex items-center justify-between">
               <h2 className="text-md font-black text-slate-950 flex items-center gap-2">
-                <Info className="w-5.5 h-5.5 text-brand-rose-600" />
+                <Info className="w-5.5 h-5.5 text-brand-primary-600" />
                 <span>Perfil de Cliente</span>
               </h2>
               <button 
@@ -296,7 +296,7 @@ export default function ClientesClient({ initialClients }: Props) {
             <div className="flex-1 p-6 space-y-6 overflow-y-auto">
               {/* Bloque Identidad */}
               <div className="flex items-center gap-4 bg-slate-100 border border-slate-200 rounded-2xl p-5 shadow-inner">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-rose-600 to-brand-gold-500 flex items-center justify-center font-black text-xl text-white shadow-md">
+                <div className="w-16 h-16 rounded-2xl bg-brand-primary-600 flex items-center justify-center font-black text-xl text-white shadow-md">
                   {selectedClient.fullName.substring(0, 2).toUpperCase()}
                 </div>
                 <div className="space-y-0.5">
@@ -314,7 +314,7 @@ export default function ClientesClient({ initialClients }: Props) {
                 </h4>
                 <div className="space-y-3.5">
                   <div className="flex items-center gap-3 text-xs">
-                    <Phone className="w-4.5 h-4.5 text-brand-rose-600" />
+                    <Phone className="w-4.5 h-4.5 text-brand-primary-600" />
                     <div>
                       <span className="text-slate-500 block text-[10px] font-bold uppercase">Teléfono</span>
                       <span className="text-slate-950 font-black text-sm">{selectedClient.phone}</span>
@@ -347,7 +347,7 @@ export default function ClientesClient({ initialClients }: Props) {
                   </div>
 
                   <div className="flex items-center gap-3 text-xs">
-                    <Cake className="w-4.5 h-4.5 text-brand-rose-600 animate-bounce" />
+                    <Cake className="w-4.5 h-4.5 text-brand-primary-600 animate-bounce" />
                     <div>
                       <span className="text-slate-500 block text-[10px] font-bold uppercase">Cumpleaños</span>
                       <span className="text-slate-950 font-black text-sm">
@@ -404,7 +404,7 @@ export default function ClientesClient({ initialClients }: Props) {
             {/* Cabecera Modal */}
             <div className="flex items-center justify-between mb-5 border-b border-slate-200 pb-3">
               <h2 className="text-lg font-black text-slate-950 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-brand-rose-600" />
+                <Sparkles className="w-5 h-5 text-brand-primary-600" />
                 <span>Registrar Cliente</span>
               </h2>
               <button 
@@ -422,7 +422,7 @@ export default function ClientesClient({ initialClients }: Props) {
                 <label className="block text-xs font-bold text-slate-900 uppercase">Nombre completo *</label>
                 <input
                   {...register('fullName')}
-                  className="w-full rounded-xl border border-slate-350 bg-white px-3 py-3 text-xs font-semibold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-rose-500/20 focus:border-brand-rose-600 smooth-transition shadow-sm"
+                  className="w-full rounded-xl border border-slate-355 bg-white px-3 py-3 text-xs font-semibold text-slate-955 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 smooth-transition shadow-sm"
                   placeholder="Ej. María García"
                 />
                 {errors.fullName && <p className="text-[10px] text-rose-700 font-bold mt-0.5">{errors.fullName.message}</p>}
@@ -434,7 +434,7 @@ export default function ClientesClient({ initialClients }: Props) {
                 <input
                   {...register('phone')}
                   type="tel"
-                  className="w-full rounded-xl border border-slate-350 bg-white px-3 py-3 text-xs font-semibold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-rose-500/20 focus:border-brand-rose-600 smooth-transition shadow-sm"
+                  className="w-full rounded-xl border border-slate-355 bg-white px-3 py-3 text-xs font-semibold text-slate-955 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 smooth-transition shadow-sm"
                   placeholder="Ej. 3001234567"
                 />
                 {errors.phone && <p className="text-[10px] text-rose-700 font-bold mt-0.5">{errors.phone.message}</p>}
@@ -446,7 +446,7 @@ export default function ClientesClient({ initialClients }: Props) {
                 <input
                   {...register('email')}
                   type="email"
-                  className="w-full rounded-xl border border-slate-350 bg-white px-3 py-3 text-xs font-semibold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-rose-500/20 focus:border-brand-rose-600 smooth-transition shadow-sm"
+                  className="w-full rounded-xl border border-slate-355 bg-white px-3 py-3 text-xs font-semibold text-slate-955 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 smooth-transition shadow-sm"
                   placeholder="Ej. maria@example.com"
                 />
                 {errors.email && <p className="text-[10px] text-rose-700 font-bold mt-0.5">{errors.email.message}</p>}
@@ -458,7 +458,7 @@ export default function ClientesClient({ initialClients }: Props) {
                 <input
                   {...register('birthday')}
                   type="date"
-                  className="w-full rounded-xl border border-slate-350 bg-white px-3 py-3 text-xs font-semibold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-rose-500/20 focus:border-brand-rose-600 smooth-transition shadow-sm"
+                  className="w-full rounded-xl border border-slate-355 bg-white px-3 py-3 text-xs font-semibold text-slate-955 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 smooth-transition shadow-sm"
                 />
               </div>
 
@@ -468,7 +468,7 @@ export default function ClientesClient({ initialClients }: Props) {
                 <textarea
                   {...register('notes')}
                   rows={2}
-                  className="w-full rounded-xl border border-slate-350 bg-white px-3 py-3 text-xs font-semibold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-rose-500/20 focus:border-brand-rose-600 resize-none smooth-transition shadow-sm"
+                  className="w-full rounded-xl border border-slate-355 bg-white px-3 py-3 text-xs font-semibold text-slate-955 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 resize-none smooth-transition shadow-sm"
                   placeholder="Ej. Prefiere café negro, alérgica a esmaltes acrílicos..."
                 />
               </div>
@@ -479,7 +479,7 @@ export default function ClientesClient({ initialClients }: Props) {
                   {...register('whatsappOptin')}
                   id="whatsappOptin"
                   type="checkbox"
-                  className="w-4.5 h-4.5 rounded border-slate-350 text-brand-rose-600 focus:ring-brand-rose-500/30 accent-brand-rose-600 cursor-pointer"
+                  className="w-4.5 h-4.5 rounded border-slate-355 text-brand-primary-600 focus:ring-brand-primary-500/30 accent-brand-primary-600 cursor-pointer"
                 />
                 <label htmlFor="whatsappOptin" className="text-xs text-slate-900 font-extrabold cursor-pointer select-none">
                   Acepta recibir notificaciones automatizadas por WhatsApp
@@ -506,7 +506,7 @@ export default function ClientesClient({ initialClients }: Props) {
                 <button
                   type="submit"
                   disabled={isSubmitting || isPending}
-                  className="flex-1 rounded-xl bg-gradient-to-r from-brand-rose-600 to-brand-rose-500 px-4 py-3 text-xs font-bold text-white hover:from-brand-rose-700 hover:to-brand-rose-600 disabled:opacity-50 disabled:cursor-not-allowed smooth-transition shadow-sm"
+                  className="flex-1 rounded-xl bg-brand-primary-600 px-4 py-3 text-xs font-bold text-white hover:bg-brand-primary-700 disabled:opacity-50 disabled:cursor-not-allowed smooth-transition shadow-sm"
                 >
                   {isSubmitting ? 'Registrando...' : 'Registrar'}
                 </button>

@@ -9,7 +9,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
   const session = await requireSession()
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-slate-50/50">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-[#FAFAFC]">
       {/* Sidebar responsivo y animado */}
       <Sidebar username={session.username} />
 

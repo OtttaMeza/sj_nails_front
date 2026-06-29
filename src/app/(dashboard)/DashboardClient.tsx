@@ -68,17 +68,20 @@ export default function DashboardClient({
       {/* Saludo Principal */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-slate-950 tracking-tight flex items-center gap-2">
-            Panel de Control <Sparkles className="w-6 h-6 text-brand-rose-500 animate-float" />
+          <h1 
+            style={{ fontFamily: 'var(--font-display)' }}
+            className="text-4xl font-extrabold italic text-slate-950 tracking-tight flex items-center gap-2"
+          >
+            Panel de Control <Sparkles className="w-6.5 h-6.5 text-brand-primary animate-float" />
           </h1>
-          <p className="text-slate-700 mt-1 font-semibold text-sm">
+          <p className="text-slate-500 mt-1 font-semibold text-sm">
             Resumen general del día de hoy, {format(new Date(), 'EEEE d \'de\' MMMM', { locale: es })}.
           </p>
         </div>
         <div className="flex gap-3">
           <Link
             href="/citas"
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand-rose-600 to-brand-rose-500 px-5 py-3 text-sm font-bold text-white hover:from-brand-rose-700 hover:to-brand-rose-600 smooth-transition shadow-md shadow-brand-rose-500/10"
+            className="flex items-center gap-2 rounded-xl bg-brand-primary px-5 py-3 text-sm font-bold text-white hover:bg-brand-primary-hover smooth-transition shadow-md shadow-brand-primary/10"
           >
             <Plus className="w-4.5 h-4.5" />
             <span>Nueva Cita</span>
@@ -89,37 +92,37 @@ export default function DashboardClient({
       {/* Tarjetas de Métricas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Citas de Hoy */}
-        <div className="glass-card rounded-2xl p-6 relative overflow-hidden group hover:scale-[1.02] hover:shadow-lg smooth-transition">
-          <div className="absolute top-0 left-0 w-2.5 h-full bg-brand-rose-500" />
+        <div className="bg-white border border-[#E5E7F2] shadow-[0_10px_30px_rgba(15,23,42,0.03)] rounded-2xl p-6 relative overflow-hidden group hover:scale-[1.02] hover:shadow-lg smooth-transition">
+          <div className="absolute top-0 left-0 w-2.5 h-full bg-brand-primary" />
           <div className="flex justify-between items-start">
             <div className="space-y-2">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Citas Programadas Hoy</span>
+              <span className="text-xs font-bold text-[#667085] uppercase tracking-wider block">Citas Programadas Hoy</span>
               <span className="text-4xl font-black text-slate-950 block">{todayApps.length}</span>
             </div>
-            <div className="p-3.5 rounded-2xl bg-brand-rose-100 text-brand-rose-600 shadow-sm shadow-brand-rose-500/10">
+            <div className="p-3.5 rounded-2xl bg-brand-primary/10 text-brand-primary shadow-sm shadow-brand-primary/5">
               <CalendarRange className="w-6 h-6" />
             </div>
           </div>
-          <div className="mt-4 flex items-center gap-1.5 text-xs text-brand-rose-600 font-bold">
+          <div className="mt-4 flex items-center gap-1.5 text-xs text-brand-primary font-bold">
             <TrendingUp className="w-4 h-4 text-emerald-600 animate-pulse" />
             <span>Turnos del día en agenda</span>
           </div>
         </div>
 
         {/* Clientes Registrados */}
-        <div className="glass-card rounded-2xl p-6 relative overflow-hidden group hover:scale-[1.02] hover:shadow-lg smooth-transition">
-          <div className="absolute top-0 left-0 w-2.5 h-full bg-brand-gold-500" />
+        <div className="bg-white border border-[#E5E7F2] shadow-[0_10px_30px_rgba(15,23,42,0.03)] rounded-2xl p-6 relative overflow-hidden group hover:scale-[1.02] hover:shadow-lg smooth-transition">
+          <div className="absolute top-0 left-0 w-2.5 h-full bg-brand-secondary" />
           <div className="flex justify-between items-start">
             <div className="space-y-2">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Total Clientes</span>
+              <span className="text-xs font-bold text-[#667085] uppercase tracking-wider block">Total Clientes</span>
               <span className="text-4xl font-black text-slate-950 block">{clients.length}</span>
             </div>
-            <div className="p-3.5 rounded-2xl bg-brand-gold-100 text-brand-gold-700 shadow-sm shadow-brand-gold-500/10">
+            <div className="p-3.5 rounded-2xl bg-brand-secondary/10 text-brand-secondary shadow-sm shadow-brand-secondary/5">
               <Users className="w-6 h-6" />
             </div>
           </div>
           <div className="mt-4 flex items-center gap-1.5 text-xs">
-            <Link href="/clientes" className="text-brand-gold-700 hover:text-brand-gold-800 font-bold flex items-center gap-0.5 smooth-transition">
+            <Link href="/clientes" className="text-brand-secondary hover:text-brand-secondary/80 font-bold flex items-center gap-0.5 smooth-transition">
               <span>Gestionar base de datos</span>
               <ChevronRight className="w-4 h-4" />
             </Link>
@@ -127,18 +130,18 @@ export default function DashboardClient({
         </div>
 
         {/* Servicios Activos */}
-        <div className="glass-card rounded-2xl p-6 relative overflow-hidden group hover:scale-[1.02] hover:shadow-lg smooth-transition">
-          <div className="absolute top-0 left-0 w-2.5 h-full bg-sky-500" />
+        <div className="bg-white border border-[#E5E7F2] shadow-[0_10px_30px_rgba(15,23,42,0.03)] rounded-2xl p-6 relative overflow-hidden group hover:scale-[1.02] hover:shadow-lg smooth-transition">
+          <div className="absolute top-0 left-0 w-2.5 h-full bg-brand-premium" />
           <div className="flex justify-between items-start">
             <div className="space-y-2">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Servicios Activos</span>
+              <span className="text-xs font-bold text-[#667085] uppercase tracking-wider block">Servicios Activos</span>
               <span className="text-4xl font-black text-slate-950 block">{activeServices}</span>
             </div>
-            <div className="p-3.5 rounded-2xl bg-sky-100 text-sky-700 shadow-sm shadow-sky-500/10">
+            <div className="p-3.5 rounded-2xl bg-brand-premium/15 text-brand-premium shadow-sm shadow-brand-premium/5">
               <Scissors className="w-6 h-6" />
             </div>
           </div>
-          <div className="mt-4 flex items-center gap-1.5 text-xs text-sky-700 font-bold">
+          <div className="mt-4 flex items-center gap-1.5 text-xs text-brand-premium font-bold">
             <span>Servicios listos para cotizar</span>
           </div>
         </div>
@@ -150,7 +153,7 @@ export default function DashboardClient({
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between border-b border-slate-200 pb-4">
             <h2 className="text-xl font-extrabold text-slate-950 flex items-center gap-2">
-              <Clock className="w-5.5 h-5.5 text-brand-rose-600" />
+              <Clock className="w-5.5 h-5.5 text-brand-primary-600" />
               <span>Agenda de Citas de Hoy</span>
             </h2>
             <span className="text-xs bg-slate-200 text-slate-800 px-3 py-1 rounded-full font-bold">
@@ -201,7 +204,7 @@ export default function DashboardClient({
                           {client?.fullName ?? 'Cliente Registrado'}
                         </h3>
                         <p className="text-xs text-slate-700 flex items-center gap-1.5 font-medium">
-                          <Scissors className="w-3.5 h-3.5 text-brand-gold-600" />
+                          <Scissors className="w-3.5 h-3.5 text-brand-accent-600" />
                           <span>{service?.name ?? 'Servicio'} ({service?.durationMins ?? '0'} min)</span>
                         </p>
                         {app.notes && (
@@ -239,16 +242,16 @@ export default function DashboardClient({
             <div className="grid grid-cols-2 gap-3">
               <Link
                 href="/citas"
-                className="glass-card rounded-xl p-5 flex flex-col items-center justify-center text-center gap-2 hover:bg-slate-50 border border-slate-200 smooth-transition hover:border-brand-rose-400 group"
+                className="glass-card rounded-xl p-5 flex flex-col items-center justify-center text-center gap-2 hover:bg-slate-50 border border-slate-200 smooth-transition hover:border-brand-primary-400 group"
               >
-                <CalendarRange className="w-7 h-7 text-brand-rose-600 group-hover:scale-110 smooth-transition" />
+                <CalendarRange className="w-7 h-7 text-brand-primary-600 group-hover:scale-110 smooth-transition" />
                 <span className="text-xs font-bold text-slate-800">Agenda Citas</span>
               </Link>
               <Link
                 href="/clientes"
-                className="glass-card rounded-xl p-5 flex flex-col items-center justify-center text-center gap-2 hover:bg-slate-50 border border-slate-200 smooth-transition hover:border-brand-gold-500 group"
+                className="glass-card rounded-xl p-5 flex flex-col items-center justify-center text-center gap-2 hover:bg-slate-50 border border-slate-200 smooth-transition hover:border-brand-accent-500 group"
               >
-                <Users className="w-7 h-7 text-brand-gold-600 group-hover:scale-110 smooth-transition" />
+                <Users className="w-7 h-7 text-brand-accent-600 group-hover:scale-110 smooth-transition" />
                 <span className="text-xs font-bold text-slate-800">Clientes</span>
               </Link>
               <Link
@@ -270,7 +273,7 @@ export default function DashboardClient({
           {/* Próximos días en agenda */}
           <div className="space-y-4">
             <h2 className="text-lg font-extrabold text-slate-950 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-brand-gold-600" />
+              <Calendar className="w-5 h-5 text-brand-accent-600" />
               <span>Próximas Citas ({upcomingApps.length})</span>
             </h2>
             <div className="glass-card rounded-2xl p-4 divide-y divide-slate-200 max-h-[300px] overflow-y-auto">

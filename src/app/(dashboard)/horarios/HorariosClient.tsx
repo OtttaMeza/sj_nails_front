@@ -103,7 +103,7 @@ export default function HorariosClient({ schedules, services }: Props) {
         {/* Lado Izquierdo: Horario Comercial (2/3 de ancho) */}
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center gap-2 border-b border-slate-200 pb-4">
-            <Clock className="w-5.5 h-5.5 text-brand-rose-600" />
+            <Clock className="w-5.5 h-5.5 text-brand-primary-600" />
             <h2 className="text-xl font-extrabold text-slate-950">Horarios de Apertura Semanal</h2>
           </div>
 
@@ -142,7 +142,7 @@ export default function HorariosClient({ schedules, services }: Props) {
         {/* Lado Derecho: Simulador de Disponibilidad */}
         <div className="space-y-6">
           <div className="flex items-center gap-2 border-b border-slate-200 pb-4">
-            <Sparkles className="w-5.5 h-5.5 text-brand-gold-600 animate-float" />
+            <Sparkles className="w-5.5 h-5.5 text-brand-accent-600 animate-float" />
             <h2 className="text-lg font-extrabold text-slate-950">Consulta de Turnos Libres</h2>
           </div>
 
@@ -162,7 +162,7 @@ export default function HorariosClient({ schedules, services }: Props) {
                 <select
                   value={selectedServiceId}
                   onChange={(e) => setSelectedServiceId(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-xs font-bold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-rose-500/20 focus:border-brand-rose-600 smooth-transition cursor-pointer shadow-sm"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-xs font-bold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 smooth-transition cursor-pointer shadow-sm"
                 >
                   <option value="">Selecciona un servicio</option>
                   {services.filter(s => s.active).map(s => (
@@ -182,7 +182,7 @@ export default function HorariosClient({ schedules, services }: Props) {
                   value={selectedDate}
                   min={format(new Date(), 'yyyy-MM-dd')}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-xs font-bold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-rose-500/20 focus:border-brand-rose-600 smooth-transition shadow-sm"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-xs font-bold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 smooth-transition shadow-sm"
                 />
               </div>
             </div>
@@ -194,7 +194,7 @@ export default function HorariosClient({ schedules, services }: Props) {
                   <span className="text-xs font-black text-slate-900">Resultado</span>
                   <button 
                     onClick={handleClear}
-                    className="text-xs text-brand-rose-600 hover:text-brand-rose-800 font-extrabold transition-colors underline"
+                    className="text-xs text-brand-primary-600 hover:text-brand-primary-800 font-extrabold transition-colors underline"
                   >
                     Limpiar
                   </button>
@@ -202,7 +202,7 @@ export default function HorariosClient({ schedules, services }: Props) {
 
                 {loadingSlots ? (
                   <div className="flex items-center gap-2 py-4 text-slate-600 text-xs justify-center bg-slate-50 border border-slate-200 rounded-xl shadow-inner">
-                    <svg className="animate-spin h-4 w-4 text-brand-rose-500" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-4 w-4 text-brand-primary-500" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>

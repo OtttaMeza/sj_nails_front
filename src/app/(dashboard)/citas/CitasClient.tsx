@@ -231,7 +231,7 @@ export default function CitasClient({
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-rose-600 to-brand-rose-500 px-5 py-3 text-sm font-bold text-white hover:from-brand-rose-700 hover:to-brand-rose-600 smooth-transition shadow-md shadow-brand-rose-500/10"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-primary-600 px-5 py-3 text-sm font-bold text-white hover:bg-brand-primary-700 smooth-transition shadow-md shadow-brand-primary-500/10"
         >
           <Plus className="w-5 h-5" />
           <span>Programar Turno</span>
@@ -396,16 +396,16 @@ export default function CitasClient({
               <div 
                 key={dayStr} 
                 className={`glass-card rounded-2xl p-4 flex flex-col min-h-[380px] border shadow-md
-                  ${isDayToday ? 'border-brand-rose-500 bg-brand-rose-100/20 ring-1 ring-brand-rose-500' : 'border-slate-350'}`}
+                  ${isDayToday ? 'border-brand-primary-500 bg-brand-primary-100/20 ring-1 ring-brand-primary-500' : 'border-slate-350'}`}
               >
                 {/* Nombre de Día */}
                 <div className="border-b border-slate-200 pb-2 mb-3 text-center">
                   <span className={`text-xs uppercase tracking-wider block font-black 
-                    ${isDayToday ? 'text-brand-rose-600' : 'text-slate-500'}`}>
+                    ${isDayToday ? 'text-brand-primary-600' : 'text-slate-500'}`}>
                     {format(dayDate, 'EEEE', { locale: es })}
                   </span>
                   <span className={`text-xl font-black mt-0.5 block 
-                    ${isDayToday ? 'text-brand-rose-800' : 'text-slate-905'}`}>
+                    ${isDayToday ? 'text-brand-primary-800' : 'text-slate-900'}`}>
                     {format(dayDate, 'd MMM', { locale: es })}
                   </span>
                 </div>
@@ -458,7 +458,7 @@ export default function CitasClient({
             {/* Cabecera */}
             <div className="flex items-center justify-between mb-5 border-b border-slate-200 pb-3">
               <h2 className="text-lg font-black text-slate-950 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-brand-rose-600" />
+                <Calendar className="w-5 h-5 text-brand-primary-600" />
                 <span>Programar Cita</span>
               </h2>
               <button 
@@ -480,7 +480,7 @@ export default function CitasClient({
                 <select
                   value={selectedClientId}
                   onChange={(e) => setSelectedClientId(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-xs font-semibold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-rose-500/20 focus:border-brand-rose-600 smooth-transition cursor-pointer shadow-sm"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-xs font-semibold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 smooth-transition cursor-pointer shadow-sm"
                   required
                 >
                   <option value="">Selecciona un cliente</option>
@@ -499,7 +499,7 @@ export default function CitasClient({
                 <select
                   value={selectedServiceId}
                   onChange={(e) => setSelectedServiceId(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-xs font-semibold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-rose-500/20 focus:border-brand-rose-600 smooth-transition cursor-pointer shadow-sm"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-xs font-semibold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 smooth-transition cursor-pointer shadow-sm"
                   required
                 >
                   <option value="">Selecciona un servicio</option>
@@ -520,7 +520,7 @@ export default function CitasClient({
                   value={selectedDate}
                   min={format(new Date(), 'yyyy-MM-dd')}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-xs font-semibold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-rose-500/20 focus:border-brand-rose-600 smooth-transition shadow-sm"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-xs font-semibold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 smooth-transition shadow-sm"
                   required
                 />
               </div>
@@ -535,7 +535,7 @@ export default function CitasClient({
 
                   {loadingSlots ? (
                     <div className="flex items-center gap-2 py-3 text-slate-600 text-xs justify-center bg-slate-50 rounded-xl border border-slate-200">
-                      <svg className="animate-spin h-4 w-4 text-brand-rose-500" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin h-4 w-4 text-brand-primary-500" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                       </svg>
@@ -576,7 +576,7 @@ export default function CitasClient({
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-xs font-semibold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-rose-500/20 focus:border-brand-rose-600 resize-none smooth-transition shadow-sm"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-xs font-semibold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 resize-none smooth-transition shadow-sm"
                   placeholder="Ej. Diseño particular de uñas, alergias, café..."
                 />
               </div>
@@ -601,7 +601,7 @@ export default function CitasClient({
                 <button
                   type="submit"
                   disabled={isPending || !selectedSlot}
-                  className="flex-1 rounded-xl bg-gradient-to-r from-brand-rose-600 to-brand-rose-500 px-4 py-3 text-xs font-bold text-white hover:from-brand-rose-700 hover:to-brand-rose-600 disabled:opacity-50 disabled:cursor-not-allowed smooth-transition shadow-sm"
+                  className="flex-1 rounded-xl bg-brand-primary-600 px-4 py-3 text-xs font-bold text-white hover:bg-brand-primary-700 disabled:opacity-50 disabled:cursor-not-allowed smooth-transition shadow-sm"
                 >
                   {isPending ? 'Guardando...' : 'Agendar Cita'}
                 </button>
