@@ -13,6 +13,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
+                deleteDir()
                 checkout scm
             }
         }
@@ -68,8 +69,14 @@ pipeline {
 
     post {
         always {
-            sh "docker logout || true"
-            sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG} || true"
+            script {
+                try {
+                    sh "docker logout || true"
+                    sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG} || true"
+                } catch (Exception e) {
+                    echo "Cleanup omitido (sin contexto de nodo): ${e.message}"
+                }
+            }
         }
         success {
             echo "Deploy exitoso: ${IMAGE_NAME}:${IMAGE_TAG}"
