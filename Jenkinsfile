@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout(true)
+    }
+
     environment {
         IMAGE_NAME   = "ottameza/sjnails-front"
         IMAGE_TAG    = "${env.BUILD_NUMBER}"
