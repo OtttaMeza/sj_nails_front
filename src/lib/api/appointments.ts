@@ -21,8 +21,8 @@ export function createAppointment(
 }
 
 export function cancelAppointment(id: number, token: string): Promise<void> {
-  return apiFetch<void>(`/api/appointments/${id}/cancel`, {
-    method: 'PATCH',
+  return apiFetch<void>(`/api/appointments/${id}`, {
+    method: 'DELETE',
     token,
   })
 }

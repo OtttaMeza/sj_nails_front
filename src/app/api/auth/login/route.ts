@@ -10,6 +10,7 @@ interface BackendAuthData {
   token: string
   username: string
   role: string
+  salonId?: number
 }
 
 interface BackendApiResponse {
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       id: data.username,
       username: data.username,
       role: data.role as 'SUPER_ADMIN' | 'ADMIN' | 'USER',
-      salonId: 1,
+      salonId: data.salonId ?? 1,
       backendToken: data.token,
     })
 

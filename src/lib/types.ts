@@ -57,6 +57,14 @@ export interface SalonServiceResponse {
   active: boolean
 }
 
+export interface CreateSalonServiceRequest {
+  whatsappNumber: string
+  name: string
+  description?: string
+  durationMins?: number
+  price: number
+}
+
 export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'USER'
 
 export interface ApiResponse<T> {

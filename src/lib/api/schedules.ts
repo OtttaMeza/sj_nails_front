@@ -11,7 +11,7 @@ export function getAvailableSlots(
   token: string
 ): Promise<string[]> {
   return apiFetch<string[]>(
-    `/api/schedules/available?serviceId=${serviceId}&date=${encodeURIComponent(date)}`,
+    `/api/schedules/available-slots?serviceId=${serviceId}&date=${encodeURIComponent(date)}`,
     { token }
   )
 }
