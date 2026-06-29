@@ -63,16 +63,15 @@ export default function LoginPage() {
         </div>
 
         {/* Branding header */}
-        <div className="relative z-10 flex-shrink-0">
-          <div className="relative w-full" style={{ height: '90px' }}>
-            <Image
-              src="/Logo_web.png"
-              alt="MiCitaApp Platform"
-              fill
-              className="object-contain object-left"
-              priority
-            />
-          </div>
+        <div className="relative z-10 shrink-0">
+          <Image
+            src="/Logo_web.png"
+            alt="MiCita Platform"
+            width={180}
+            height={56}
+            className="object-contain object-left"
+            priority
+          />
         </div>
 
         {/* Ambient glows inside dark panel */}
@@ -84,8 +83,8 @@ export default function LoginPage() {
         <div className="absolute top-[48%] left-[6%] w-1 h-1 rounded-full bg-white/30 pointer-events-none" />
         <div className="absolute top-[68%] right-[18%] w-1 h-1 rounded-full bg-[#684EFF]/50 pointer-events-none animate-pulse" />
 
-        {/* Wave divider with thin colored stroke paths */}
-        <div className="absolute top-0 right-0 h-full w-56 pointer-events-none z-20 hidden lg:block overflow-hidden">
+        {/* Wave divider — solo visible en xl+ para evitar solapamiento en pantallas estrechas */}
+        <div className="absolute top-0 -right-px h-full w-44 pointer-events-none z-0 hidden xl:block">
           <svg className="h-full w-full text-[#FAFAFC]" viewBox="0 0 100 1000" preserveAspectRatio="none" fill="currentColor">
             <path d="M100 0 C 30 200, 20 450, 80 620 C 105 760, 40 900, 100 1000 Z" />
           </svg>
@@ -95,7 +94,7 @@ export default function LoginPage() {
           </svg>
         </div>
 
-        <div className="flex-1 flex flex-col justify-center space-y-9 relative z-10 pr-12 mt-12">
+        <div className="flex-1 flex flex-col justify-center space-y-9 relative z-10 pr-6 xl:pr-48 mt-12">
           <div className="space-y-4">
             <h1>
               <span className="text-white text-5xl font-extrabold block tracking-tight">Tu negocio.</span>
