@@ -4,8 +4,9 @@ import { createAppointment, cancelAppointment } from '@/lib/api/appointments'
 import { getAvailableSlots } from '@/lib/api/schedules'
 import { getClients } from '@/lib/api/clients'
 import { getServices } from '@/lib/api/services'
+import { getSalons } from '@/lib/api/salons'
 import { getSession } from '@/lib/auth/session'
-import { AppointmentResponse, ClientResponse, CreateAppointmentRequest, SalonServiceResponse } from '@/lib/types'
+import { AppointmentResponse, ClientResponse, CreateAppointmentRequest, SalonResponse, SalonServiceResponse } from '@/lib/types'
 import { revalidatePath } from 'next/cache'
 
 interface CreateActionResult {
@@ -85,6 +86,12 @@ interface GetServicesResult {
   error?: string
 }
 
+interface GetSalonsResult {
+  ok: boolean
+  salons?: SalonResponse[]
+  error?: string
+}
+
 function extractError(err: unknown, fallback: string): string {
   if (err instanceof Error) return err.message
   if (typeof err === 'object' && err !== null && 'message' in err) {
@@ -106,15 +113,31 @@ export async function getClientsAction(): Promise<GetClientsResult> {
   }
 }
 
-export async function getServicesAction(): Promise<GetServicesResult> {
+export async function getServicesAction(salonId?: number): Promise<GetServicesResult> {
   const session = await getSession()
   if (!session) return { ok: false, error: 'No autenticado' }
 
+  const resolvedSalonId = session.role === 'SUPER_ADMIN' ? salonId : undefined
+
   try {
-    const services = await getServices(session.backendToken)
+    const services = await getServices(session.backendToken, resolvedSalonId)
     return { ok: true, services }
   } catch (err) {
     console.error('[getServicesAction]', err)
     return { ok: false, error: extractError(err, 'Error al obtener servicios') }
+  }
+}
+
+export async function getSalonsAction(): Promise<GetSalonsResult> {
+  const session = await getSession()
+  if (!session) return { ok: false, error: 'No autenticado' }
+  if (session.role !== 'SUPER_ADMIN') return { ok: false, error: 'Sin permisos' }
+
+  try {
+    const salons = await getSalons(session.backendToken)
+    return { ok: true, salons }
+  } catch (err) {
+    console.error('[getSalonsAction]', err)
+    return { ok: false, error: extractError(err, 'Error al obtener negocios') }
   }
 }

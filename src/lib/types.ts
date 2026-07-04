@@ -19,6 +19,12 @@ export interface CreateAppointmentRequest {
   startTime: string
   endTime: string
   notes?: string
+  salonId?: number
+}
+
+export interface SalonResponse {
+  id: number
+  name: string
 }
 
 export interface ClientResponse {

@@ -1,8 +1,9 @@
 import { apiFetch } from '@/lib/api/http'
 import { SalonServiceResponse, CreateSalonServiceRequest } from '@/lib/types'
 
-export function getServices(token: string): Promise<SalonServiceResponse[]> {
-  return apiFetch<SalonServiceResponse[]>('/api/services', { token })
+export function getServices(token: string, salonId?: number): Promise<SalonServiceResponse[]> {
+  const query = salonId ? `?salonId=${salonId}` : ''
+  return apiFetch<SalonServiceResponse[]>(`/api/services${query}`, { token })
 }
 
 export function getService(id: number, token: string): Promise<SalonServiceResponse> {

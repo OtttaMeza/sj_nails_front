@@ -15,35 +15,44 @@ import {
   XCircle,
   HelpCircle,
   Phone,
+  Building2,
 } from 'lucide-react'
-import { AppointmentResponse, ClientResponse, SalonServiceResponse } from '@/lib/types'
+import { AppointmentResponse, ClientResponse, SalonResponse, SalonServiceResponse, UserRole } from '@/lib/types'
 import {
   createAppointmentAction,
   cancelAppointmentAction,
-  getAvailableSlotsAction,
   getClientsAction,
   getServicesAction,
+  getSalonsAction,
 } from './actions'
 import { useToast } from '@/components/ui/ToastProvider'
-import { format, parseISO, addMinutes, isSameDay } from 'date-fns'
+import DatePicker from '@/components/ui/DatePicker'
+import TimeRangePicker from '@/components/ui/TimeRangePicker'
+import { format, parseISO, isSameDay } from 'date-fns'
 import { es } from 'date-fns/locale'
 
 interface Props {
   initialAppointments: AppointmentResponse[]
   initialClients: ClientResponse[]
   initialServices: SalonServiceResponse[]
+  initialSalons: SalonResponse[]
+  role: UserRole
 }
 
 export default function CitasClient({
   initialAppointments,
   initialClients,
   initialServices,
+  initialSalons,
+  role,
 }: Props) {
   const { toast } = useToast()
+  const isSuperAdmin = role === 'SUPER_ADMIN'
 
   const [appointments, setAppointments] = useState<AppointmentResponse[]>(initialAppointments)
   const [clients, setClients] = useState<ClientResponse[]>(initialClients)
   const [services, setServices] = useState<SalonServiceResponse[]>(initialServices)
+  const [salons, setSalons] = useState<SalonResponse[]>(initialSalons)
 
   const [activeTab, setActiveTab] = useState<'lista' | 'agenda'>('lista')
   const [showModal, setShowModal] = useState(false)
@@ -52,66 +61,69 @@ export default function CitasClient({
   const [statusFilter, setStatusFilter] = useState<string>('ALL')
 
   const [selectedClientId, setSelectedClientId] = useState<string>('')
+  const [selectedSalonId, setSelectedSalonId] = useState<string>('')
   const [selectedServiceId, setSelectedServiceId] = useState<string>('')
   const [selectedDate, setSelectedDate] = useState<string>('')
-  const [selectedSlot, setSelectedSlot] = useState<string>('')
+  const [selectedStartTime, setSelectedStartTime] = useState<string>('')
+  const [selectedEndTime, setSelectedEndTime] = useState<string>('')
   const [notes, setNotes] = useState<string>('')
 
-  const [availableSlots, setAvailableSlots] = useState<string[]>([])
-  const [loadingSlots, setLoadingSlots] = useState(false)
-  const [slotsError, setSlotsError] = useState<string | null>(null)
+  const [loadingServices, setLoadingServices] = useState(false)
 
   const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
-    if (!selectedServiceId || !selectedDate) {
-      setAvailableSlots([])
-      return
-    }
+    if (!isSuperAdmin || !selectedSalonId) return
 
-    async function fetchSlots() {
-      setLoadingSlots(true)
-      setSlotsError(null)
-      setSelectedSlot('')
+    setSelectedServiceId('')
+    setServices([])
+    setLoadingServices(true)
 
-      const res = await getAvailableSlotsAction(Number(selectedServiceId), selectedDate)
-      if (res.ok && res.slots) {
-        setAvailableSlots(res.slots)
+    getServicesAction(Number(selectedSalonId)).then(res => {
+      if (res.ok && res.services) {
+        setServices(res.services)
       } else {
-        setSlotsError(res.error ?? 'Error al obtener horas disponibles')
-        setAvailableSlots([])
+        toast(res.error ?? 'Error al cargar servicios', 'error')
       }
-      setLoadingSlots(false)
-    }
-
-    fetchSlots()
-  }, [selectedServiceId, selectedDate])
+      setLoadingServices(false)
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSalonId])
 
   async function openModal() {
     setShowModal(true)
     setLoadingModalData(true)
 
-    const [clientsRes, servicesRes] = await Promise.allSettled([
+    const nullPromise = Promise.resolve(null) as Promise<null>
+    const [clientsRes, salonsRes] = await Promise.allSettled([
       getClientsAction(),
-      getServicesAction(),
+      isSuperAdmin ? getSalonsAction() : nullPromise,
     ])
 
-    if (clientsRes.status === 'fulfilled' && clientsRes.value.ok && clientsRes.value.clients) {
+    if (clientsRes.status === 'fulfilled' && clientsRes.value?.ok && clientsRes.value.clients) {
       setClients(clientsRes.value.clients)
     } else {
       const error = clientsRes.status === 'fulfilled'
-        ? clientsRes.value.error
+        ? clientsRes.value?.error
         : 'Error de red al cargar clientes'
       toast(error ?? 'Error al cargar clientes', 'error')
     }
 
-    if (servicesRes.status === 'fulfilled' && servicesRes.value.ok && servicesRes.value.services) {
-      setServices(servicesRes.value.services)
+    if (isSuperAdmin) {
+      if (salonsRes.status === 'fulfilled' && salonsRes.value?.ok && salonsRes.value.salons) {
+        setSalons(salonsRes.value.salons)
+      } else if (salonsRes.status === 'fulfilled' && salonsRes.value) {
+        toast(salonsRes.value.error ?? 'Error al cargar negocios', 'error')
+      } else if (salonsRes.status === 'rejected') {
+        toast('Error de red al cargar negocios', 'error')
+      }
     } else {
-      const error = servicesRes.status === 'fulfilled'
-        ? servicesRes.value.error
-        : 'Error de red al cargar servicios'
-      toast(error ?? 'Error al cargar servicios', 'error')
+      const servicesRes = await getServicesAction()
+      if (servicesRes.ok && servicesRes.services) {
+        setServices(servicesRes.services)
+      } else {
+        toast(servicesRes.error ?? 'Error al cargar servicios', 'error')
+      }
     }
 
     setLoadingModalData(false)
@@ -120,15 +132,22 @@ export default function CitasClient({
   function closeModal() {
     setShowModal(false)
     setSelectedClientId('')
+    setSelectedSalonId('')
     setSelectedServiceId('')
     setSelectedDate('')
-    setSelectedSlot('')
+    setSelectedStartTime('')
+    setSelectedEndTime('')
     setNotes('')
-    setAvailableSlots([])
+    if (isSuperAdmin) setServices([])
   }
 
   async function handleCreateAppointment(e: React.FormEvent) {
     e.preventDefault()
+
+    if (selectedEndTime <= selectedStartTime) {
+      toast('La hora de fin debe ser posterior a la hora de inicio', 'error')
+      return
+    }
 
     const client = clients.find(c => c.id === Number(selectedClientId))
     const service = services.find(s => s.id === Number(selectedServiceId))
@@ -138,16 +157,14 @@ export default function CitasClient({
       return
     }
 
-    const startDateTime = new Date(`${selectedDate}T${selectedSlot}:00`)
-    const endDateTime = addMinutes(startDateTime, service.durationMins)
-
     const result = await createAppointmentAction({
       clientId: client.id,
       serviceId: service.id,
       whatsappNumber: client.phone,
-      startTime: startDateTime.toISOString(),
-      endTime: endDateTime.toISOString(),
+      startTime: `${selectedDate}T${selectedStartTime}:00`,
+      endTime: `${selectedDate}T${selectedEndTime}:00`,
       notes: notes || undefined,
+      ...(isSuperAdmin && selectedSalonId ? { salonId: Number(selectedSalonId) } : {}),
     })
 
     if (!result.ok) {
@@ -216,7 +233,13 @@ export default function CitasClient({
     CANCELLED: { label: 'Cancelada',  bg: 'bg-rose-100 text-rose-950 border-rose-300 font-bold',      icon: XCircle     },
   }
 
-  const isFormIncomplete = !selectedClientId || !selectedServiceId || !selectedDate || !selectedSlot
+  const isFormIncomplete =
+    !selectedClientId ||
+    (isSuperAdmin && !selectedSalonId) ||
+    !selectedServiceId ||
+    !selectedDate ||
+    !selectedStartTime ||
+    !selectedEndTime
 
   return (
     <div className="space-y-6">
@@ -436,7 +459,7 @@ export default function CitasClient({
       {/* Modal Nueva Cita */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 mx-4 relative overflow-hidden">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 mx-4 relative">
             {/* Cabecera */}
             <div className="flex items-center justify-between mb-5 border-b border-slate-200 pb-3">
               <h2 className="text-lg font-black text-slate-950 flex items-center gap-2">
@@ -478,6 +501,34 @@ export default function CitasClient({
                 </select>
               </div>
 
+              {/* Empresa o Negocio — solo SUPER_ADMIN */}
+              {isSuperAdmin && (
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-slate-900 uppercase flex items-center gap-1.5">
+                    <Building2 className="w-4 h-4 text-slate-500" />
+                    <span>Empresa o Negocio *</span>
+                  </label>
+                  <select
+                    value={selectedSalonId}
+                    onChange={(e) => setSelectedSalonId(e.target.value)}
+                    disabled={loadingModalData}
+                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-xs font-semibold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 smooth-transition cursor-pointer shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                    required
+                  >
+                    {loadingModalData ? (
+                      <option value="">Cargando negocios...</option>
+                    ) : (
+                      <>
+                        <option value="">Selecciona un negocio</option>
+                        {salons.map(s => (
+                          <option key={s.id} value={s.id}>{s.name}</option>
+                        ))}
+                      </>
+                    )}
+                  </select>
+                </div>
+              )}
+
               {/* Servicio */}
               <div className="space-y-1.5">
                 <label className="block text-xs font-bold text-slate-900 uppercase flex items-center gap-1.5">
@@ -487,12 +538,14 @@ export default function CitasClient({
                 <select
                   value={selectedServiceId}
                   onChange={(e) => setSelectedServiceId(e.target.value)}
-                  disabled={loadingModalData}
+                  disabled={loadingModalData || loadingServices || (isSuperAdmin && !selectedSalonId)}
                   className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-xs font-semibold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 smooth-transition cursor-pointer shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
                   required
                 >
-                  {loadingModalData ? (
+                  {loadingModalData || loadingServices ? (
                     <option value="">Cargando servicios...</option>
+                  ) : isSuperAdmin && !selectedSalonId ? (
+                    <option value="">Selecciona primero un negocio</option>
                   ) : (
                     <>
                       <option value="">Selecciona un servicio</option>
@@ -510,58 +563,29 @@ export default function CitasClient({
                   <Calendar className="w-4 h-4 text-slate-500" />
                   <span>Fecha *</span>
                 </label>
-                <input
-                  type="date"
+                <DatePicker
                   value={selectedDate}
+                  onChange={setSelectedDate}
                   min={format(new Date(), 'yyyy-MM-dd')}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-xs font-semibold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 smooth-transition shadow-sm"
-                  required
+                  placeholder="Selecciona una fecha"
+                  disabled={loadingModalData}
                 />
               </div>
 
-              {/* Horas disponibles */}
-              {selectedServiceId && selectedDate && (
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-900 uppercase flex items-center gap-1.5">
-                    <Clock className="w-4 h-4 text-slate-500" />
-                    <span>Horas Disponibles *</span>
-                  </label>
-
-                  {loadingSlots ? (
-                    <div className="flex items-center gap-2 py-3 text-slate-600 text-xs justify-center bg-slate-50 rounded-xl border border-slate-200">
-                      <svg className="animate-spin h-4 w-4 text-brand-primary-500" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      <span className="font-bold">Buscando turnos libres...</span>
-                    </div>
-                  ) : slotsError ? (
-                    <p className="text-xs text-rose-700 font-bold">{slotsError}</p>
-                  ) : availableSlots.length === 0 ? (
-                    <p className="text-xs text-slate-500 font-bold italic py-2 bg-slate-50 rounded-xl border border-slate-200 text-center">
-                      No hay bloques disponibles para esta fecha.
-                    </p>
-                  ) : (
-                    <div className="grid grid-cols-4 gap-2 max-h-[140px] overflow-y-auto p-2 border border-slate-200 rounded-xl bg-slate-100/50 shadow-inner">
-                      {availableSlots.map(slot => (
-                        <button
-                          key={slot}
-                          type="button"
-                          onClick={() => setSelectedSlot(slot)}
-                          className={`px-2 py-2 rounded-lg text-xs font-black text-center border smooth-transition
-                            ${selectedSlot === slot
-                              ? 'bg-slate-900 border-slate-900 text-white shadow-md'
-                              : 'bg-white border-slate-350 text-slate-900 hover:bg-slate-100 hover:border-slate-400'
-                            }`}
-                        >
-                          {slot}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+              {/* Rango de horario */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-900 uppercase flex items-center gap-1.5">
+                  <Clock className="w-4 h-4 text-slate-500" />
+                  <span>Rango de Horario *</span>
+                </label>
+                <TimeRangePicker
+                  startTime={selectedStartTime}
+                  endTime={selectedEndTime}
+                  onStartChange={setSelectedStartTime}
+                  onEndChange={setSelectedEndTime}
+                  disabled={loadingModalData}
+                />
+              </div>
 
               {/* Notas */}
               <div className="space-y-1.5">
