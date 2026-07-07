@@ -18,9 +18,9 @@ export default async function CitasPage() {
   const isSuperAdmin = session.role === 'SUPER_ADMIN'
 
   const [appsRes, clientsRes, servicesRes] = await Promise.allSettled([
-    getAppointments(token),
+    isSuperAdmin ? Promise.resolve([] as AppointmentResponse[]) : getAppointments(token),
     getClients(token),
-    getServices(token),
+    isSuperAdmin ? Promise.resolve([] as SalonServiceResponse[]) : getServices(token),
   ])
 
   if (appsRes.status === 'fulfilled') appointments = appsRes.value ?? []

@@ -1,12 +1,12 @@
 'use server'
 
-import { createAppointment, cancelAppointment } from '@/lib/api/appointments'
+import { createAppointment, cancelAppointment, getWeeklyAppointments } from '@/lib/api/appointments'
 import { getAvailableSlots } from '@/lib/api/schedules'
 import { getClients } from '@/lib/api/clients'
 import { getServices } from '@/lib/api/services'
 import { getSalons } from '@/lib/api/salons'
 import { getSession } from '@/lib/auth/session'
-import { AppointmentResponse, ClientResponse, CreateAppointmentRequest, SalonResponse, SalonServiceResponse } from '@/lib/types'
+import { AppointmentResponse, ClientResponse, CreateAppointmentRequest, SalonResponse, SalonServiceResponse, WeeklyDay } from '@/lib/types'
 import { revalidatePath } from 'next/cache'
 
 interface CreateActionResult {
@@ -125,6 +125,41 @@ export async function getServicesAction(salonId?: number): Promise<GetServicesRe
   } catch (err) {
     console.error('[getServicesAction]', err)
     return { ok: false, error: extractError(err, 'Error al obtener servicios') }
+  }
+}
+
+interface GetWeeklyResult {
+  ok: boolean
+  days?: WeeklyDay[]
+  error?: string
+}
+
+function extractWeeklyDays(raw: unknown): WeeklyDay[] {
+  if (Array.isArray(raw)) return raw as WeeklyDay[]
+  if (raw && typeof raw === 'object') {
+    const obj = raw as Record<string, unknown>
+    for (const key of ['days', 'week', 'data', 'items', 'appointments']) {
+      if (Array.isArray(obj[key])) return obj[key] as WeeklyDay[]
+    }
+  }
+  return []
+}
+
+export async function getWeeklyAppointmentsAction(params?: {
+  startDate?: string
+  endDate?: string
+  salonId?: number
+}): Promise<GetWeeklyResult> {
+  const session = await getSession()
+  if (!session) return { ok: false, error: 'No autenticado' }
+
+  try {
+    const raw = await getWeeklyAppointments(session.backendToken, params)
+    const days = extractWeeklyDays(raw)
+    return { ok: true, days }
+  } catch (err) {
+    console.error('[getWeeklyAppointmentsAction]', err)
+    return { ok: false, error: extractError(err, 'Error al obtener agenda semanal') }
   }
 }
 

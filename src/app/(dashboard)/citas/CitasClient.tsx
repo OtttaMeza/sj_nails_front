@@ -16,19 +16,22 @@ import {
   HelpCircle,
   Phone,
   Building2,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
-import { AppointmentResponse, ClientResponse, SalonResponse, SalonServiceResponse, UserRole } from '@/lib/types'
+import { AppointmentResponse, ClientResponse, SalonResponse, SalonServiceResponse, UserRole, WeeklyDay } from '@/lib/types'
 import {
   createAppointmentAction,
   cancelAppointmentAction,
   getClientsAction,
   getServicesAction,
   getSalonsAction,
+  getWeeklyAppointmentsAction,
 } from './actions'
 import { useToast } from '@/components/ui/ToastProvider'
 import DatePicker from '@/components/ui/DatePicker'
 import TimeRangePicker from '@/components/ui/TimeRangePicker'
-import { format, parseISO, isSameDay } from 'date-fns'
+import { format, parseISO, isSameDay, startOfWeek, endOfWeek, addWeeks, subWeeks } from 'date-fns'
 import { es } from 'date-fns/locale'
 
 interface Props {
@@ -55,6 +58,12 @@ export default function CitasClient({
   const [salons, setSalons] = useState<SalonResponse[]>(initialSalons)
 
   const [activeTab, setActiveTab] = useState<'lista' | 'agenda'>('lista')
+  const [weeklyDays, setWeeklyDays] = useState<WeeklyDay[]>([])
+  const [weekLoading, setWeekLoading] = useState(false)
+  const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() =>
+    startOfWeek(new Date(), { weekStartsOn: 1 })
+  )
+  const [agendaSalonId, setAgendaSalonId] = useState<string>('')
   const [showModal, setShowModal] = useState(false)
   const [loadingModalData, setLoadingModalData] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
@@ -89,6 +98,30 @@ export default function CitasClient({
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSalonId])
+
+  useEffect(() => {
+    if (activeTab !== 'agenda') return
+    if (isSuperAdmin && !agendaSalonId) return
+
+    const startDate = format(currentWeekStart, 'yyyy-MM-dd')
+    const endDate = format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'yyyy-MM-dd')
+    const params = {
+      startDate,
+      endDate,
+      ...(isSuperAdmin ? { salonId: Number(agendaSalonId) } : {}),
+    }
+
+    setWeekLoading(true)
+    getWeeklyAppointmentsAction(params).then(res => {
+      if (res.ok && res.days) {
+        setWeeklyDays(res.days)
+      } else {
+        toast(res.error ?? 'Error al cargar la agenda semanal', 'error')
+      }
+      setWeekLoading(false)
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, currentWeekStart, agendaSalonId])
 
   async function openModal() {
     setShowModal(true)
@@ -213,24 +246,11 @@ export default function CitasClient({
     new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
   )
 
-  const appointmentsByDay: { [key: string]: AppointmentResponse[] } = {}
-  appointments.forEach(app => {
-    const dateStr = format(parseISO(app.startTime), 'yyyy-MM-dd')
-    if (!appointmentsByDay[dateStr]) appointmentsByDay[dateStr] = []
-    appointmentsByDay[dateStr].push(app)
-  })
-
-  const next7Days = Array.from({ length: 7 }).map((_, i) => {
-    const d = new Date()
-    d.setDate(d.getDate() + i)
-    return format(d, 'yyyy-MM-dd')
-  })
-
   const statusConfig = {
-    PENDING:   { label: 'Pendiente',  bg: 'bg-amber-100 text-amber-900 border-amber-300 font-bold',   icon: HelpCircle  },
-    CONFIRMED: { label: 'Confirmada', bg: 'bg-emerald-100 text-emerald-950 border-emerald-300 font-bold', icon: CheckCircle2 },
-    COMPLETED: { label: 'Completada', bg: 'bg-sky-100 text-sky-950 border-sky-300 font-bold',         icon: CheckCircle2 },
-    CANCELLED: { label: 'Cancelada',  bg: 'bg-rose-100 text-rose-950 border-rose-300 font-bold',      icon: XCircle     },
+    PENDING:   { label: 'Pendiente',  badge: 'bg-amber-50 text-amber-700 border-amber-200',        icon: HelpCircle,   dot: 'bg-amber-400',   row: 'border-l-amber-400',   bg: 'bg-amber-50 text-amber-700 border-amber-200'   },
+    CONFIRMED: { label: 'Confirmada', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200',  icon: CheckCircle2, dot: 'bg-emerald-500', row: 'border-l-emerald-500', bg: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    COMPLETED: { label: 'Completada', badge: 'bg-sky-50 text-sky-700 border-sky-200',              icon: CheckCircle2, dot: 'bg-sky-500',     row: 'border-l-sky-500',     bg: 'bg-sky-50 text-sky-700 border-sky-200'     },
+    CANCELLED: { label: 'Cancelada',  badge: 'bg-slate-100 text-slate-500 border-slate-200',       icon: XCircle,      dot: 'bg-slate-400',   row: 'border-l-slate-300',   bg: 'bg-slate-100 text-slate-500 border-slate-200'  },
   }
 
   const isFormIncomplete =
@@ -292,7 +312,7 @@ export default function CitasClient({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full sm:w-44 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:border-transparent smooth-transition cursor-pointer shadow-sm"
+              className="w-full sm:w-44"
             >
               <option value="ALL">Todos los estados</option>
               <option value="PENDING">Pendientes</option>
@@ -302,157 +322,244 @@ export default function CitasClient({
             </select>
           </div>
         )}
+
+        {activeTab === 'agenda' && isSuperAdmin && (
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <Building2 className="w-4 h-4 text-slate-500 shrink-0" />
+            <select
+              value={agendaSalonId}
+              onChange={(e) => {
+                setAgendaSalonId(e.target.value)
+                setWeeklyDays([])
+              }}
+              className="w-full sm:w-56"
+            >
+              <option value="">Selecciona un negocio</option>
+              {salons.map(s => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Vista Lista */}
       {activeTab === 'lista' ? (
-        <div className="glass-card rounded-2xl border border-slate-300/80 overflow-hidden bg-white shadow-lg">
+        <div className="space-y-2">
+          {/* Conteo */}
+          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
+            {sortedAppointments.length} {sortedAppointments.length === 1 ? 'cita' : 'citas'}
+          </p>
+
           {sortedAppointments.length === 0 ? (
-            <div className="py-20 text-center">
-              <Calendar className="w-14 h-14 text-slate-400 mx-auto mb-3" />
-              <p className="text-slate-800 text-sm font-bold">No se encontraron citas en la agenda</p>
-              <p className="text-slate-500 text-xs mt-1">Registra citas o limpia los criterios de búsqueda.</p>
+            <div className="rounded-2xl border border-slate-200 bg-white py-24 text-center shadow-sm">
+              <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+              <p className="text-slate-700 text-sm font-bold">Sin citas que mostrar</p>
+              <p className="text-slate-400 text-xs mt-1">Ajusta los filtros o programa una nueva cita.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-slate-200 bg-slate-100 text-slate-700">
-                    <th className="px-6 py-4.5 text-left font-extrabold">Cliente</th>
-                    <th className="px-6 py-4.5 text-left font-extrabold">Servicio</th>
-                    <th className="px-6 py-4.5 text-left font-extrabold">Fecha y Hora</th>
-                    <th className="px-6 py-4.5 text-left font-extrabold">Notas</th>
-                    <th className="px-6 py-4.5 text-left font-extrabold">Estado</th>
-                    <th className="px-6 py-4.5 text-right font-extrabold">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-150">
-                  {sortedAppointments.map((app) => {
-                    const client = getClient(app.clientId)
-                    const service = getService(app.serviceId)
-                    const status = statusConfig[app.status] || statusConfig.PENDING
-                    const StatusIcon = status.icon
+            <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-sm">
+              {/* Header */}
+              <div className="grid grid-cols-[2fr_1.5fr_1.6fr_1fr_1fr_auto] gap-4 items-center px-5 py-3 bg-slate-950">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cliente</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Servicio</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fecha / Hora</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Estado</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Notas</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Acción</span>
+              </div>
 
-                    return (
-                      <tr key={app.id} className="hover:bg-slate-50 smooth-transition">
-                        <td className="px-6 py-4">
-                          <div className="flex flex-col">
-                            <span className="font-extrabold text-slate-950 text-sm">{client?.fullName ?? 'Cliente'}</span>
-                            <span className="text-slate-700 flex items-center gap-1.5 mt-1 font-semibold">
-                              <Phone className="w-3.5 h-3.5 text-slate-500" />
-                              <span>{client?.phone}</span>
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex flex-col">
-                            <span className="font-bold text-slate-900">{service?.name ?? 'Servicio'}</span>
-                            <span className="text-slate-600 mt-1 font-semibold">{service?.durationMins} min</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex flex-col">
-                            <span className="font-black text-slate-950">
-                              {format(parseISO(app.startTime), "d 'de' MMMM", { locale: es })}
-                            </span>
-                            <span className="text-slate-700 mt-1 font-bold">
-                              {format(parseISO(app.startTime), 'HH:mm')} - {format(parseISO(app.endTime), 'HH:mm')}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-slate-700 italic max-w-xs truncate font-medium">
-                          {app.notes || '—'}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold ${status.bg}`}>
-                            <StatusIcon className="w-3.5 h-3.5" />
-                            <span>{status.label}</span>
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          {app.status !== 'CANCELLED' && app.status !== 'COMPLETED' ? (
-                            <button
-                              onClick={() => handleCancelAppointment(app.id)}
-                              className="text-rose-700 hover:text-white border border-rose-200 hover:bg-rose-600 px-3 py-1.5 rounded-xl font-bold smooth-transition shadow-sm"
-                            >
-                              Cancelar Cita
-                            </button>
-                          ) : (
-                            <span className="text-slate-400 font-bold">—</span>
-                          )}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+              <div className="divide-y divide-slate-100">
+                {sortedAppointments.map((app) => {
+                  const client = getClient(app.clientId)
+                  const service = getService(app.serviceId)
+                  const status = statusConfig[app.status] || statusConfig.PENDING
+                  const StatusIcon = status.icon
+                  const initials = client?.fullName
+                    .split(' ')
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map(w => w[0].toUpperCase())
+                    .join('') ?? '?'
+
+                  return (
+                    <div
+                      key={app.id}
+                      className={`grid grid-cols-[2fr_1.5fr_1.6fr_1fr_1fr_auto] gap-4 items-center px-5 py-4 border-l-[3px] smooth-transition
+                        ${app.status === 'CANCELLED' ? 'opacity-60 bg-slate-50/60' : 'hover:bg-slate-50/80'}
+                        ${status.row}`}
+                    >
+                      {/* Cliente */}
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-xs font-black text-slate-600 shrink-0 border border-slate-200">
+                          {initials}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-slate-900 text-sm truncate leading-tight">{client?.fullName ?? '—'}</p>
+                          <p className="text-slate-400 text-[11px] flex items-center gap-1 mt-0.5">
+                            <Phone className="w-3 h-3 shrink-0" />
+                            <span className="truncate">{client?.phone}</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Servicio */}
+                      <div className="min-w-0">
+                        <p className="font-semibold text-slate-800 text-xs truncate">{service?.name ?? '—'}</p>
+                        {service?.durationMins && (
+                          <p className="text-slate-400 text-[11px] flex items-center gap-1 mt-0.5">
+                            <Clock className="w-3 h-3 shrink-0" />
+                            <span>{service.durationMins} min</span>
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Fecha / Hora */}
+                      <div>
+                        <p className="font-bold text-slate-900 text-xs capitalize">
+                          {format(parseISO(app.startTime), "EEE d 'de' MMM yyyy", { locale: es })}
+                        </p>
+                        <p className="text-slate-400 text-[11px] flex items-center gap-1 mt-0.5">
+                          <Clock className="w-3 h-3 shrink-0" />
+                          <span>{format(parseISO(app.startTime), 'HH:mm')} – {format(parseISO(app.endTime), 'HH:mm')}</span>
+                        </p>
+                      </div>
+
+                      {/* Estado */}
+                      <div>
+                        <span className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] font-bold ${status.badge}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${status.dot}`} />
+                          {status.label}
+                        </span>
+                      </div>
+
+                      {/* Notas */}
+                      <p className="text-slate-400 text-[11px] italic truncate">
+                        {app.notes || '—'}
+                      </p>
+
+                      {/* Acción */}
+                      <div className="flex justify-end">
+                        {app.status !== 'CANCELLED' && app.status !== 'COMPLETED' ? (
+                          <button
+                            onClick={() => handleCancelAppointment(app.id)}
+                            className="text-[11px] font-bold text-rose-600 hover:text-white border border-rose-200 hover:bg-rose-500 hover:border-rose-500 px-3 py-1.5 rounded-lg smooth-transition whitespace-nowrap"
+                          >
+                            Cancelar
+                          </button>
+                        ) : (
+                          <span className="text-slate-300 text-xs">—</span>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           )}
         </div>
       ) : (
         /* Vista Agenda Semanal */
-        <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
-          {next7Days.map(dayStr => {
-            const dayDate = new Date(`${dayStr}T00:00:00`)
-            const dayApps = appointmentsByDay[dayStr] || []
-            const isDayToday = isSameDay(dayDate, new Date())
+        <div className="space-y-4">
+          {/* Navegación de semana */}
+          <div className="flex items-center justify-between bg-white border border-slate-200 rounded-2xl px-5 py-3 shadow-sm">
+            <button
+              onClick={() => setCurrentWeekStart(w => subWeeks(w, 1))}
+              disabled={weekLoading}
+              className="p-2 rounded-xl hover:bg-slate-100 smooth-transition disabled:opacity-50 cursor-pointer"
+            >
+              <ChevronLeft className="w-5 h-5 text-slate-700" />
+            </button>
+            <span className="text-sm font-extrabold text-slate-900 capitalize">
+              {format(currentWeekStart, "d 'de' MMMM", { locale: es })}
+              {' — '}
+              {format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), "d 'de' MMMM yyyy", { locale: es })}
+            </span>
+            <button
+              onClick={() => setCurrentWeekStart(w => addWeeks(w, 1))}
+              disabled={weekLoading}
+              className="p-2 rounded-xl hover:bg-slate-100 smooth-transition disabled:opacity-50 cursor-pointer"
+            >
+              <ChevronRight className="w-5 h-5 text-slate-700" />
+            </button>
+          </div>
 
-            return (
-              <div
-                key={dayStr}
-                className={`glass-card rounded-2xl p-4 flex flex-col min-h-[380px] border shadow-md
-                  ${isDayToday ? 'border-brand-primary-500 bg-brand-primary-100/20 ring-1 ring-brand-primary-500' : 'border-slate-350'}`}
-              >
-                <div className="border-b border-slate-200 pb-2 mb-3 text-center">
-                  <span className={`text-xs uppercase tracking-wider block font-black
-                    ${isDayToday ? 'text-brand-primary-600' : 'text-slate-500'}`}>
-                    {format(dayDate, 'EEEE', { locale: es })}
-                  </span>
-                  <span className={`text-xl font-black mt-0.5 block
-                    ${isDayToday ? 'text-brand-primary-800' : 'text-slate-900'}`}>
-                    {format(dayDate, 'd MMM', { locale: es })}
-                  </span>
-                </div>
+          {isSuperAdmin && !agendaSalonId ? (
+            <div className="flex flex-col items-center justify-center py-24 text-center">
+              <Building2 className="w-12 h-12 text-slate-300 mb-3" />
+              <p className="text-slate-700 text-sm font-bold">Selecciona un negocio para ver la agenda semanal</p>
+              <p className="text-slate-400 text-xs mt-1">Usa el selector de negocio en la parte superior.</p>
+            </div>
+          ) : weekLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+              {Array.from({ length: 7 }).map((_, i) => (
+                <div key={i} className="glass-card rounded-2xl p-4 min-h-[380px] border border-slate-200 shadow-md animate-pulse bg-slate-50" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+              {weeklyDays.map(weekDay => {
+                const dayDate = parseISO(weekDay.date)
+                const isDayToday = isSameDay(dayDate, new Date())
+                const dayApps = [...weekDay.appointments].sort((a, b) =>
+                  a.startTime.localeCompare(b.startTime)
+                )
 
-                <div className="flex-1 space-y-3 overflow-y-auto max-h-[420px] pr-1">
-                  {dayApps.length === 0 ? (
-                    <div className="h-full flex items-center justify-center text-center py-10">
-                      <span className="text-xs text-slate-500 font-bold italic">Sin turnos</span>
+                return (
+                  <div
+                    key={weekDay.date}
+                    className={`glass-card rounded-2xl p-4 flex flex-col min-h-[380px] border shadow-md
+                      ${isDayToday ? 'border-brand-primary-500 bg-brand-primary-100/20 ring-1 ring-brand-primary-500' : 'border-slate-350'}`}
+                  >
+                    <div className="border-b border-slate-200 pb-2 mb-3 text-center">
+                      <span className={`text-xs uppercase tracking-wider block font-black
+                        ${isDayToday ? 'text-brand-primary-600' : 'text-slate-500'}`}>
+                        {format(dayDate, 'EEEE', { locale: es })}
+                      </span>
+                      <span className={`text-xl font-black mt-0.5 block
+                        ${isDayToday ? 'text-brand-primary-800' : 'text-slate-900'}`}>
+                        {format(dayDate, 'd MMM', { locale: es })}
+                      </span>
                     </div>
-                  ) : (
-                    dayApps
-                      .sort((a, b) => a.startTime.localeCompare(b.startTime))
-                      .map(app => {
-                        const client = getClient(app.clientId)
-                        const service = getService(app.serviceId)
-                        const status = statusConfig[app.status] || statusConfig.PENDING
 
-                        return (
-                          <div
-                            key={app.id}
-                            className={`p-3 rounded-xl border text-[11px] shadow-sm flex flex-col gap-2 smooth-transition hover:border-slate-400
-                              ${app.status === 'CANCELLED' ? 'opacity-60 bg-slate-100 border-slate-200' : 'bg-white border-slate-300'}`}
-                          >
-                            <div className="flex justify-between items-start gap-1">
-                              <span className="font-black text-slate-900 text-[12px]">
-                                {format(parseISO(app.startTime), 'HH:mm')}
-                              </span>
-                              <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold ${status.bg}`}>
-                                {status.label}
-                              </span>
+                    <div className="flex-1 space-y-3 overflow-y-auto max-h-[420px] pr-1">
+                      {dayApps.length === 0 ? (
+                        <div className="h-full flex items-center justify-center text-center py-10">
+                          <span className="text-xs text-slate-500 font-bold italic">Sin turnos</span>
+                        </div>
+                      ) : (
+                        dayApps.map(app => {
+                          const service = getService(app.serviceId)
+                          const status = statusConfig[app.status] || statusConfig.PENDING
+
+                          return (
+                            <div
+                              key={app.id}
+                              className={`p-3 rounded-xl border text-[11px] shadow-sm flex flex-col gap-2 smooth-transition hover:border-slate-400
+                                ${app.status === 'CANCELLED' ? 'opacity-60 bg-slate-100 border-slate-200' : 'bg-white border-slate-300'}`}
+                            >
+                              <div className="flex justify-between items-start gap-1">
+                                <span className="font-black text-slate-900 text-[12px]">
+                                  {format(parseISO(app.startTime), 'HH:mm')}
+                                </span>
+                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold ${status.bg}`}>
+                                  {status.label}
+                                </span>
+                              </div>
+                              <div>
+                                <p className="font-extrabold text-slate-950 truncate text-[12px]">{app.client.fullName}</p>
+                                <p className="text-slate-700 font-bold truncate text-[11px]">{service?.name}</p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="font-extrabold text-slate-950 truncate text-[12px]">{client?.fullName}</p>
-                              <p className="text-slate-700 font-bold truncate text-[11px]">{service?.name}</p>
-                            </div>
-                          </div>
-                        )
-                      })
-                  )}
-                </div>
-              </div>
-            )
-          })}
+                          )
+                        })
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       )}
 
@@ -485,7 +592,7 @@ export default function CitasClient({
                   value={selectedClientId}
                   onChange={(e) => setSelectedClientId(e.target.value)}
                   disabled={loadingModalData}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-xs font-semibold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 smooth-transition cursor-pointer shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full"
                   required
                 >
                   {loadingModalData ? (
@@ -512,7 +619,7 @@ export default function CitasClient({
                     value={selectedSalonId}
                     onChange={(e) => setSelectedSalonId(e.target.value)}
                     disabled={loadingModalData}
-                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-xs font-semibold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 smooth-transition cursor-pointer shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="w-full"
                     required
                   >
                     {loadingModalData ? (
@@ -539,7 +646,7 @@ export default function CitasClient({
                   value={selectedServiceId}
                   onChange={(e) => setSelectedServiceId(e.target.value)}
                   disabled={loadingModalData || loadingServices || (isSuperAdmin && !selectedSalonId)}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-xs font-semibold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 smooth-transition cursor-pointer shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full"
                   required
                 >
                   {loadingModalData || loadingServices ? (

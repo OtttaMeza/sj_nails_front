@@ -162,7 +162,7 @@ export default function HorariosClient({ schedules, services }: Props) {
                 <select
                   value={selectedServiceId}
                   onChange={(e) => setSelectedServiceId(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-xs font-bold text-slate-950 focus:outline-none focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-600 smooth-transition cursor-pointer shadow-sm"
+                  className="w-full"
                 >
                   <option value="">Selecciona un servicio</option>
                   {services.filter(s => s.active).map(s => (

@@ -71,6 +71,30 @@ export interface CreateSalonServiceRequest {
   price: number
 }
 
+export interface WeeklyAppointmentClient {
+  id: number
+  fullName: string
+  phone: string
+}
+
+export interface WeeklyAppointment {
+  id: number
+  client: WeeklyAppointmentClient
+  serviceId: number
+  startTime: string
+  endTime: string
+  status: AppointmentStatus
+  googleEventId: string | null
+  notes: string | null
+  createdAt: string
+}
+
+export interface WeeklyDay {
+  date: string
+  dayOfWeek: string
+  appointments: WeeklyAppointment[]
+}
+
 export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'USER'
 
 export interface ApiResponse<T> {

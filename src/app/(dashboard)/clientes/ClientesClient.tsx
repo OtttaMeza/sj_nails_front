@@ -162,7 +162,7 @@ export default function ClientesClient({ initialClients }: Props) {
         <select
           value={whatsappFilter}
           onChange={(e) => setWhatsappFilter(e.target.value as 'ALL' | 'YES' | 'NO')}
-          className="rounded-xl border border-slate-350 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:border-transparent smooth-transition cursor-pointer w-full sm:w-52 shadow-sm"
+          className="w-full sm:w-52"
         >
           <option value="ALL">WhatsApp (Todos)</option>
           <option value="YES">Acepta WhatsApp</option>

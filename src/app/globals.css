@@ -128,7 +128,7 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-input, select, textarea {
+input, textarea {
   color: #1D2033;
   font-weight: 600;
 }
@@ -136,6 +136,43 @@ input, select, textarea {
 input::placeholder, textarea::placeholder {
   color: #667085;
   font-weight: 400;
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: #ffffff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.875rem center;
+  background-size: 14px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 0.625rem 2.75rem 0.625rem 0.875rem;
+  color: #1D2033;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.25rem;
+  cursor: pointer;
+  transition: border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow  0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+}
+
+select:hover:not(:disabled) {
+  border-color: #94a3b8;
+}
+
+select:focus {
+  outline: none;
+  border-color: #684EFF;
+  box-shadow: 0 0 0 3px rgba(104, 78, 255, 0.12);
+}
+
+select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #f8fafc;
 }
 
 .badge-amber {
