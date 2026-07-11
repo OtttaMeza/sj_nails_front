@@ -71,6 +71,35 @@ export interface CreateSalonServiceRequest {
   price: number
 }
 
+export interface WeeklyScheduleBlock {
+  id: number
+  openTime: string
+  closeTime: string
+}
+
+export interface WeeklyScheduleDay {
+  dayOfWeek: string
+  blocks: WeeklyScheduleBlock[]
+}
+
+export interface ScheduleOverrideResponse {
+  id: number
+  date: string
+  openTime: string | null
+  closeTime: string | null
+  closed: boolean
+  reason: string | null
+}
+
+export interface CreateScheduleOverrideRequest {
+  salonId?: number
+  date: string
+  openTime?: string
+  closeTime?: string
+  closed: boolean
+  reason?: string
+}
+
 export interface UpdateSalonServiceRequest {
   name?: string
   description?: string

@@ -1,27 +1,56 @@
 import { requireSession } from '@/lib/auth/session'
-import { getSchedules } from '@/lib/api/schedules'
+import { getWeeklySchedule, getScheduleOverrides } from '@/lib/api/schedules'
 import { getServices } from '@/lib/api/services'
-import { Schedule, SalonServiceResponse } from '@/lib/types'
+import { getSalons } from '@/lib/api/salons'
+import { WeeklyScheduleDay, SalonServiceResponse, SalonResponse, ScheduleOverrideResponse } from '@/lib/types'
 import HorariosClient from './HorariosClient'
 
 export default async function HorariosPage() {
   const session = await requireSession()
 
-  let schedules: Schedule[] = []
+  let weekly: WeeklyScheduleDay[] = []
   let services: SalonServiceResponse[] = []
+  let salons: SalonResponse[] = []
+  let overrides: ScheduleOverrideResponse[] = []
 
   const token = session.backendToken
+  const isSuperAdmin = session.role === 'SUPER_ADMIN'
 
-  const [schedulesRes, servicesRes] = await Promise.allSettled([
-    getSchedules(token),
-    getServices(token),
-  ])
+  const fetches: Promise<void>[] = []
 
-  if (schedulesRes.status === 'fulfilled') schedules = schedulesRes.value ?? []
-  else console.error('Error fetching schedules:', schedulesRes.reason)
+  if (!isSuperAdmin) {
+    fetches.push(
+      getWeeklySchedule(token)
+        .then(r => { weekly = r ?? [] })
+        .catch(e => console.error('Error fetching weekly schedule:', e))
+    )
+    fetches.push(
+      getServices(token, session.salonId)
+        .then(r => { services = r ?? [] })
+        .catch(e => console.error('Error fetching services:', e))
+    )
+    fetches.push(
+      getScheduleOverrides(token)
+        .then(r => { overrides = r ?? [] })
+        .catch(e => console.error('Error fetching schedule overrides:', e))
+    )
+  } else {
+    fetches.push(
+      getSalons(token)
+        .then(r => { salons = r ?? [] })
+        .catch(e => console.error('Error fetching salons:', e))
+    )
+  }
 
-  if (servicesRes.status === 'fulfilled') services = servicesRes.value ?? []
-  else console.error('Error fetching services:', servicesRes.reason)
+  await Promise.all(fetches)
 
-  return <HorariosClient schedules={schedules} services={services} />
+  return (
+    <HorariosClient
+      initialWeekly={weekly}
+      initialSalons={salons}
+      initialServices={services}
+      initialOverrides={overrides}
+      role={session.role}
+    />
+  )
 }
