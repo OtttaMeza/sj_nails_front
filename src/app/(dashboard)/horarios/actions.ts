@@ -1,8 +1,8 @@
 'use server'
 
-import { getWeeklySchedule, createScheduleOverride, getScheduleOverrides, deleteScheduleOverride } from '@/lib/api/schedules'
+import { getWeeklySchedule, createScheduleOverride, getScheduleOverrides, deleteScheduleOverride, updateScheduleOverride } from '@/lib/api/schedules'
 import { getSession } from '@/lib/auth/session'
-import { WeeklyScheduleDay, CreateScheduleOverrideRequest, ScheduleOverrideResponse } from '@/lib/types'
+import { WeeklyScheduleDay, CreateScheduleOverrideRequest, UpdateScheduleOverrideRequest, ScheduleOverrideResponse } from '@/lib/types'
 
 interface WeeklyScheduleResult {
   ok: boolean
@@ -81,18 +81,48 @@ export async function getScheduleOverridesAction(salonId?: number): Promise<Over
   }
 }
 
+interface UpdateOverrideResult {
+  ok: boolean
+  updated?: ScheduleOverrideResponse
+  error?: string
+}
+
+export async function updateScheduleOverrideAction(
+  id: number,
+  data: UpdateScheduleOverrideRequest,
+  salonId?: number,
+): Promise<UpdateOverrideResult> {
+  const session = await getSession()
+  if (!session) return { ok: false, error: 'No autenticado' }
+  if (session.role === 'USER') return { ok: false, error: 'Sin permisos' }
+  if (session.role === 'SUPER_ADMIN' && !salonId) {
+    return { ok: false, error: 'Debes seleccionar un negocio' }
+  }
+
+  try {
+    const updated = await updateScheduleOverride(id, data, session.backendToken, session.role === 'SUPER_ADMIN' ? salonId : undefined)
+    return { ok: true, updated }
+  } catch (err) {
+    console.error('[updateScheduleOverrideAction]', err)
+    return { ok: false, error: extractError(err, 'Error al actualizar el horario especial') }
+  }
+}
+
 interface DeleteOverrideResult {
   ok: boolean
   error?: string
 }
 
-export async function deleteScheduleOverrideAction(id: number): Promise<DeleteOverrideResult> {
+export async function deleteScheduleOverrideAction(id: number, salonId?: number): Promise<DeleteOverrideResult> {
   const session = await getSession()
   if (!session) return { ok: false, error: 'No autenticado' }
   if (session.role === 'USER') return { ok: false, error: 'Sin permisos' }
+  if (session.role === 'SUPER_ADMIN' && !salonId) {
+    return { ok: false, error: 'Debes seleccionar un negocio' }
+  }
 
   try {
-    await deleteScheduleOverride(id, session.backendToken)
+    await deleteScheduleOverride(id, session.backendToken, session.role === 'SUPER_ADMIN' ? salonId : undefined)
     return { ok: true }
   } catch (err) {
     console.error('[deleteScheduleOverrideAction]', err)

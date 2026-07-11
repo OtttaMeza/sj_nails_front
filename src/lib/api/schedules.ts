@@ -1,5 +1,5 @@
 import { apiFetch } from '@/lib/api/http'
-import { Schedule, WeeklyScheduleDay, CreateScheduleOverrideRequest, ScheduleOverrideResponse } from '@/lib/types'
+import { Schedule, WeeklyScheduleDay, CreateScheduleOverrideRequest, UpdateScheduleOverrideRequest, ScheduleOverrideResponse } from '@/lib/types'
 
 export function getSchedules(token: string): Promise<Schedule[]> {
   return apiFetch<Schedule[]>('/api/schedules', { token })
@@ -15,8 +15,23 @@ export function getScheduleOverrides(token: string, salonId?: number): Promise<S
   return apiFetch<ScheduleOverrideResponse[]>(`/api/schedules/overrides${query}`, { token })
 }
 
-export function deleteScheduleOverride(id: number, token: string): Promise<void> {
-  return apiFetch<void>(`/api/schedules/overrides/${id}`, {
+export function updateScheduleOverride(
+  id: number,
+  data: UpdateScheduleOverrideRequest,
+  token: string,
+  salonId?: number,
+): Promise<ScheduleOverrideResponse> {
+  const query = salonId ? `?salonId=${salonId}` : ''
+  return apiFetch<ScheduleOverrideResponse>(`/api/schedules/overrides/${id}${query}`, {
+    method: 'PUT',
+    body: data,
+    token,
+  })
+}
+
+export function deleteScheduleOverride(id: number, token: string, salonId?: number): Promise<void> {
+  const query = salonId ? `?salonId=${salonId}` : ''
+  return apiFetch<void>(`/api/schedules/overrides/${id}${query}`, {
     method: 'DELETE',
     token,
   })

@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   Scissors,
+  UserCog,
 } from 'lucide-react'
 import { UserRole } from '@/lib/types'
 
@@ -30,7 +31,11 @@ const baseNavLinks = [
 
 export default function Sidebar({ username, role }: SidebarProps) {
   const navLinks = role !== 'USER'
-    ? [...baseNavLinks, { href: '/servicios', label: 'Servicios', icon: Scissors }]
+    ? [
+        ...baseNavLinks,
+        { href: '/servicios', label: 'Servicios', icon: Scissors },
+        { href: '/usuarios', label: 'Usuarios', icon: UserCog },
+      ]
     : baseNavLinks
   const pathname = usePathname()
   const router = useRouter()

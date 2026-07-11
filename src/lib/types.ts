@@ -100,11 +100,42 @@ export interface CreateScheduleOverrideRequest {
   reason?: string
 }
 
+export interface UpdateScheduleOverrideRequest {
+  openTime?: string
+  closeTime?: string
+  reason?: string
+}
+
 export interface UpdateSalonServiceRequest {
   name?: string
   description?: string
   durationMins?: number
   price?: number
+}
+
+export type CreateUserRole = 'ADMIN' | 'USER'
+
+export interface UserResponse {
+  id: number
+  fullName: string | null
+  phone: string | null
+  email: string
+  role: UserRole
+  active: boolean
+}
+
+export interface CreateUserRequest {
+  salonId?: number
+  fullName: string
+  phone: string
+  email: string
+  password: string
+  role: CreateUserRole
+}
+
+export interface UpdateUserRequest {
+  fullName?: string
+  phone?: string
 }
 
 export interface WeeklyAppointmentClient {
