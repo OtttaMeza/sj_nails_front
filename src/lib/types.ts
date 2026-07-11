@@ -64,11 +64,18 @@ export interface SalonServiceResponse {
 }
 
 export interface CreateSalonServiceRequest {
-  whatsappNumber: string
+  salonId?: number
   name: string
   description?: string
   durationMins?: number
   price: number
+}
+
+export interface UpdateSalonServiceRequest {
+  name?: string
+  description?: string
+  durationMins?: number
+  price?: number
 }
 
 export interface WeeklyAppointmentClient {

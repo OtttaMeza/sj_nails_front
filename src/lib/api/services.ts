@@ -1,5 +1,5 @@
 import { apiFetch } from '@/lib/api/http'
-import { SalonServiceResponse, CreateSalonServiceRequest } from '@/lib/types'
+import { SalonServiceResponse, CreateSalonServiceRequest, UpdateSalonServiceRequest } from '@/lib/types'
 
 export function getServices(token: string, salonId?: number): Promise<SalonServiceResponse[]> {
   const query = salonId ? `?salonId=${salonId}` : ''
@@ -14,6 +14,28 @@ export function createService(data: CreateSalonServiceRequest, token: string): P
   return apiFetch<SalonServiceResponse>('/api/services', {
     method: 'POST',
     body: data,
+    token,
+  })
+}
+
+export function updateService(
+  id: number,
+  data: UpdateSalonServiceRequest,
+  token: string,
+  salonId?: number,
+): Promise<SalonServiceResponse> {
+  const query = salonId ? `?salonId=${salonId}` : ''
+  return apiFetch<SalonServiceResponse>(`/api/services/${id}${query}`, {
+    method: 'PUT',
+    body: data,
+    token,
+  })
+}
+
+export function deleteService(id: number, token: string, salonId?: number): Promise<SalonServiceResponse> {
+  const query = salonId ? `?salonId=${salonId}` : ''
+  return apiFetch<SalonServiceResponse>(`/api/services/${id}${query}`, {
+    method: 'DELETE',
     token,
   })
 }

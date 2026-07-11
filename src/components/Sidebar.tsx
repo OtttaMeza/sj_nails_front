@@ -4,28 +4,34 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { 
+import {
   Home,
-  Calendar, 
-  Clock, 
-  Users, 
-  LogOut, 
-  Menu, 
+  Calendar,
+  Clock,
+  Users,
+  LogOut,
+  Menu,
   X,
+  Scissors,
 } from 'lucide-react'
+import { UserRole } from '@/lib/types'
 
 interface SidebarProps {
   username: string
+  role: UserRole
 }
 
-const navLinks = [
+const baseNavLinks = [
   { href: '/', label: 'Inicio', icon: Home },
   { href: '/citas', label: 'Citas', icon: Calendar },
   { href: '/horarios', label: 'Horarios', icon: Clock },
   { href: '/clientes', label: 'Clientes', icon: Users },
 ]
 
-export default function Sidebar({ username }: SidebarProps) {
+export default function Sidebar({ username, role }: SidebarProps) {
+  const navLinks = role !== 'USER'
+    ? [...baseNavLinks, { href: '/servicios', label: 'Servicios', icon: Scissors }]
+    : baseNavLinks
   const pathname = usePathname()
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)

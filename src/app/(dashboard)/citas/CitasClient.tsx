@@ -29,6 +29,7 @@ import {
   getWeeklyAppointmentsAction,
 } from './actions'
 import { useToast } from '@/components/ui/ToastProvider'
+import { useConfirm } from '@/components/ui/ConfirmProvider'
 import DatePicker from '@/components/ui/DatePicker'
 import TimeRangePicker from '@/components/ui/TimeRangePicker'
 import { format, parseISO, isSameDay, startOfWeek, endOfWeek, addWeeks, subWeeks } from 'date-fns'
@@ -50,6 +51,7 @@ export default function CitasClient({
   role,
 }: Props) {
   const { toast } = useToast()
+  const { confirm } = useConfirm()
   const isSuperAdmin = role === 'SUPER_ADMIN'
 
   const [appointments, setAppointments] = useState<AppointmentResponse[]>(initialAppointments)
@@ -216,7 +218,13 @@ export default function CitasClient({
   }
 
   async function handleCancelAppointment(id: number) {
-    if (!confirm('¿Estás seguro de que deseas cancelar esta cita?')) return
+    const ok = await confirm({
+      title: '¿Cancelar esta cita?',
+      message: 'Esta acción marcará la cita como cancelada. No se puede deshacer.',
+      confirmLabel: 'Sí, cancelar',
+      variant: 'danger',
+    })
+    if (!ok) return
 
     const res = await cancelAppointmentAction(id)
     if (res.ok) {

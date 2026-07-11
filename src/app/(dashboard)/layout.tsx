@@ -11,7 +11,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-[#FAFAFC]">
       {/* Sidebar responsivo y animado */}
-      <Sidebar username={session.username} />
+      <Sidebar username={session.username} role={session.role} />
 
       {/* Área del Contenido Principal */}
       <main className="flex-1 overflow-auto pt-16 lg:pt-0 smooth-transition">

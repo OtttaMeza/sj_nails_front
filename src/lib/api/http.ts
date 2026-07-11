@@ -35,6 +35,8 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
     throw error
   }
 
-  const wrapper = (await response.json()) as ApiResponse<T>
+  const text = await response.text()
+  if (!text || text.trim() === '') return undefined as T
+  const wrapper = JSON.parse(text) as ApiResponse<T>
   return wrapper.data
 }
