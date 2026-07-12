@@ -126,16 +126,27 @@ export interface UserResponse {
 
 export interface CreateUserRequest {
   salonId?: number
-  fullName: string
-  phone: string
-  email: string
+  username: string
   password: string
   role: CreateUserRole
+  fullName: string
+  phone: string
 }
 
 export interface UpdateUserRequest {
   fullName?: string
   phone?: string
+  email?: string
+  role?: CreateUserRole
+}
+
+export interface ResetPasswordRequest {
+  newPassword: string
+}
+
+export interface RoleResponse {
+  value: string
+  label: string
 }
 
 export interface WeeklyAppointmentClient {

@@ -15,14 +15,17 @@ import {
   UserX,
   ShieldCheck,
   User,
+  KeyRound,
 } from 'lucide-react'
-import { UserResponse, SalonResponse, UpdateUserRequest, UserRole, CreateUserRole } from '@/lib/types'
+import { UserResponse, SalonResponse, UpdateUserRequest, UserRole, CreateUserRole, RoleResponse } from '@/lib/types'
 import {
   createUserAction,
   getSalonsForUserAction,
   getUsersForSalonAction,
   updateUserAction,
   deactivateUserAction,
+  resetUserPasswordAction,
+  getRolesAction,
 } from './actions'
 import { useToast } from '@/components/ui/ToastProvider'
 import { useConfirm } from '@/components/ui/ConfirmProvider'
@@ -51,13 +54,15 @@ export default function UsuariosClient({ initialUsers, initialSalons, role }: Pr
   const [salons, setSalons] = useState<SalonResponse[]>(initialSalons)
   const [selectedFilterSalonId, setSelectedFilterSalonId] = useState<string>('')
   const [loadingUsers, setLoadingUsers] = useState(false)
+  const [roles, setRoles] = useState<RoleResponse[]>([])
+  const [loadingRoles, setLoadingRoles] = useState(false)
 
   // Create modal state
   const [showModal, setShowModal] = useState(false)
   const [loadingModalData, setLoadingModalData] = useState(false)
   const [createSalonId, setCreateSalonId] = useState<string>('')
   const [createFullName, setCreateFullName] = useState('')
-  const [createEmail, setCreateEmail] = useState('')
+  const [createUsername, setCreateUsername] = useState('')
   const [createPhone, setCreatePhone] = useState('')
   const [createPassword, setCreatePassword] = useState('')
   const [createRole, setCreateRole] = useState<CreateUserRole>('USER')
@@ -68,11 +73,20 @@ export default function UsuariosClient({ initialUsers, initialSalons, role }: Pr
   const [editingUser, setEditingUser] = useState<UserResponse | null>(null)
   const [editFullName, setEditFullName] = useState('')
   const [editPhone, setEditPhone] = useState('')
+  const [editEmail, setEditEmail] = useState('')
+  const [editRole, setEditRole] = useState<CreateUserRole>('USER')
   const [editError, setEditError] = useState<string | null>(null)
   const [isEditPending, startEditTransition] = useTransition()
 
+  // Password modal state
+  const [passwordTargetUser, setPasswordTargetUser] = useState<UserResponse | null>(null)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordError, setPasswordError] = useState<string | null>(null)
+  const [isPasswordPending, startPasswordTransition] = useTransition()
+
   const isCreateIncomplete =
-    !createFullName || !createEmail || !createPhone || !createPassword ||
+    !createFullName || !createUsername || !createPhone || !createPassword ||
     (isSuperAdmin && !createSalonId)
 
   async function handleSalonFilterChange(salonId: string) {
@@ -90,22 +104,36 @@ export default function UsuariosClient({ initialUsers, initialSalons, role }: Pr
     setLoadingUsers(false)
   }
 
+  async function loadRolesIfNeeded() {
+    if (roles.length > 0) return
+    setLoadingRoles(true)
+    const res = await getRolesAction()
+    if (res.ok && res.roles) setRoles(res.roles)
+    else toast(res.error ?? 'Error al cargar roles', 'error')
+    setLoadingRoles(false)
+  }
+
   async function openCreateModal() {
     setShowModal(true)
+    const pending: Promise<void>[] = [loadRolesIfNeeded()]
     if (isSuperAdmin && salons.length === 0) {
       setLoadingModalData(true)
-      const res = await getSalonsForUserAction()
-      if (res.ok && res.salons) setSalons(res.salons)
-      else toast(res.error ?? 'Error al cargar negocios', 'error')
-      setLoadingModalData(false)
+      pending.push(
+        getSalonsForUserAction().then(res => {
+          if (res.ok && res.salons) setSalons(res.salons)
+          else toast(res.error ?? 'Error al cargar negocios', 'error')
+          setLoadingModalData(false)
+        })
+      )
     }
+    await Promise.all(pending)
   }
 
   function closeCreateModal() {
     setShowModal(false)
     setCreateSalonId('')
     setCreateFullName('')
-    setCreateEmail('')
+    setCreateUsername('')
     setCreatePhone('')
     setCreatePassword('')
     setCreateRole('USER')
@@ -119,7 +147,7 @@ export default function UsuariosClient({ initialUsers, initialSalons, role }: Pr
     const result = await createUserAction({
       ...(isSuperAdmin && createSalonId ? { salonId: Number(createSalonId) } : {}),
       fullName: createFullName,
-      email: createEmail,
+      username: createUsername,
       phone: createPhone,
       password: createPassword,
       role: createRole,
@@ -138,10 +166,13 @@ export default function UsuariosClient({ initialUsers, initialSalons, role }: Pr
     }
   }
 
-  function openEditModal(u: UserResponse) {
+  async function openEditModal(u: UserResponse) {
+    await loadRolesIfNeeded()
     setEditingUser(u)
     setEditFullName(u.fullName ?? '')
     setEditPhone(u.phone ?? '')
+    setEditEmail(u.email)
+    setEditRole((u.role === 'SUPER_ADMIN' ? 'ADMIN' : u.role) as CreateUserRole)
     setEditError(null)
   }
 
@@ -149,7 +180,50 @@ export default function UsuariosClient({ initialUsers, initialSalons, role }: Pr
     setEditingUser(null)
     setEditFullName('')
     setEditPhone('')
+    setEditEmail('')
+    setEditRole('USER')
     setEditError(null)
+  }
+
+  function openPasswordModal(u: UserResponse) {
+    setPasswordTargetUser(u)
+    setNewPassword('')
+    setConfirmPassword('')
+    setPasswordError(null)
+  }
+
+  function closePasswordModal() {
+    setPasswordTargetUser(null)
+    setNewPassword('')
+    setConfirmPassword('')
+    setPasswordError(null)
+  }
+
+  async function handleResetPassword(e: React.FormEvent) {
+    e.preventDefault()
+    setPasswordError(null)
+
+    if (!newPassword) {
+      setPasswordError('La contraseña no puede estar vacía')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Las contraseñas no coinciden')
+      return
+    }
+
+    const salonId = isSuperAdmin && selectedFilterSalonId ? Number(selectedFilterSalonId) : undefined
+    const result = await resetUserPasswordAction(passwordTargetUser!.id, newPassword, salonId)
+
+    if (!result.ok) {
+      setPasswordError(result.error ?? 'Error al cambiar la contraseña')
+      return
+    }
+
+    startPasswordTransition(() => {
+      toast('Contraseña actualizada exitosamente', 'success')
+      closePasswordModal()
+    })
   }
 
   async function handleUpdateUser(e: React.FormEvent) {
@@ -160,6 +234,8 @@ export default function UsuariosClient({ initialUsers, initialSalons, role }: Pr
     const payload: UpdateUserRequest = {
       ...(editFullName ? { fullName: editFullName } : {}),
       ...(editPhone ? { phone: editPhone } : {}),
+      ...(editEmail ? { email: editEmail } : {}),
+      role: editRole,
     }
 
     const salonId = isSuperAdmin && selectedFilterSalonId ? Number(selectedFilterSalonId) : undefined
@@ -195,7 +271,7 @@ export default function UsuariosClient({ initialUsers, initialSalons, role }: Pr
       return
     }
 
-    startTransition(() => setUsers(prev => prev.map(u => u.id === userId ? { ...u, active: false } : u)))
+    setUsers(prev => prev.map(u => u.id === userId ? { ...u, active: false } : u))
     toast('Usuario desactivado', 'success')
   }
 
@@ -271,11 +347,12 @@ export default function UsuariosClient({ initialUsers, initialSalons, role }: Pr
           ) : (
             <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-sm">
               {/* Header tabla */}
-              <div className="grid grid-cols-[2fr_2fr_1.5fr_1fr_1fr_auto] gap-4 items-center px-5 py-3 bg-slate-950">
+              <div className="grid grid-cols-[2fr_2fr_1.5fr_1fr_1fr_1fr_auto] gap-4 items-center px-5 py-3 bg-slate-950">
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Nombre</span>
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Email</span>
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Teléfono</span>
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Rol</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Contraseña</span>
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Estado</span>
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Acciones</span>
               </div>
@@ -284,7 +361,7 @@ export default function UsuariosClient({ initialUsers, initialSalons, role }: Pr
                 {users.map((u) => (
                   <div
                     key={u.id}
-                    className={`grid grid-cols-[2fr_2fr_1.5fr_1fr_1fr_auto] gap-4 items-center px-5 py-4 smooth-transition
+                    className={`grid grid-cols-[2fr_2fr_1.5fr_1fr_1fr_1fr_auto] gap-4 items-center px-5 py-4 smooth-transition
                       ${u.active ? 'hover:bg-slate-50/80' : 'opacity-60 bg-slate-50/60'}`}
                   >
                     {/* Nombre */}
@@ -321,6 +398,18 @@ export default function UsuariosClient({ initialUsers, initialSalons, role }: Pr
                           {ROLE_LABELS[u.role]}
                         </span>
                       )}
+                    </div>
+
+                    {/* Contraseña */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-black text-slate-400 tracking-widest">•••••••••</span>
+                      <button
+                        onClick={() => openPasswordModal(u)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 smooth-transition"
+                        title="Cambiar contraseña"
+                      >
+                        <KeyRound className="w-3.5 h-3.5" />
+                      </button>
                     </div>
 
                     {/* Estado */}
@@ -389,7 +478,7 @@ export default function UsuariosClient({ initialUsers, initialSalons, role }: Pr
                   type="text"
                   value={editFullName}
                   onChange={(e) => setEditFullName(e.target.value)}
-                  placeholder="Ej. Ana García López"
+                  placeholder="Ej. Laura Martínez Ruiz"
                   className={inputClass}
                 />
               </div>
@@ -406,6 +495,42 @@ export default function UsuariosClient({ initialUsers, initialSalons, role }: Pr
                   placeholder="Ej. +52 33 9999 1234"
                   className={inputClass}
                 />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-900 uppercase flex items-center gap-1.5">
+                  <Mail className="w-4 h-4 text-slate-500" />
+                  <span>Email</span>
+                </label>
+                <input
+                  type="email"
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
+                  placeholder="Ej. usuario@salon.com"
+                  className={inputClass}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-900 uppercase flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-slate-500" />
+                  <span>Rol *</span>
+                </label>
+                <select
+                  value={editRole}
+                  onChange={(e) => setEditRole(e.target.value as CreateUserRole)}
+                  disabled={loadingRoles}
+                  className="w-full"
+                  required
+                >
+                  {loadingRoles ? (
+                    <option value="">Cargando roles...</option>
+                  ) : (
+                    roles.map(r => (
+                      <option key={r.value} value={r.value}>{r.label}</option>
+                    ))
+                  )}
+                </select>
               </div>
 
               {editError && (
@@ -484,23 +609,23 @@ export default function UsuariosClient({ initialUsers, initialSalons, role }: Pr
                   type="text"
                   value={createFullName}
                   onChange={(e) => setCreateFullName(e.target.value)}
-                  placeholder="Ej. Ana García López"
+                  placeholder="Ej. Laura Martínez Ruiz"
                   className={inputClass}
                   required
                 />
               </div>
 
-              {/* Email */}
+              {/* Username */}
               <div className="space-y-1.5">
                 <label className="block text-xs font-bold text-slate-900 uppercase flex items-center gap-1.5">
                   <Mail className="w-4 h-4 text-slate-500" />
-                  <span>Email *</span>
+                  <span>Usuario (email) *</span>
                 </label>
                 <input
                   type="email"
-                  value={createEmail}
-                  onChange={(e) => setCreateEmail(e.target.value)}
-                  placeholder="Ej. ana@salon.com"
+                  value={createUsername}
+                  onChange={(e) => setCreateUsername(e.target.value)}
+                  placeholder="Ej. usuario@salon.com"
                   className={inputClass}
                   required
                 />
@@ -547,11 +672,17 @@ export default function UsuariosClient({ initialUsers, initialSalons, role }: Pr
                 <select
                   value={createRole}
                   onChange={(e) => setCreateRole(e.target.value as CreateUserRole)}
+                  disabled={loadingRoles}
                   className="w-full"
                   required
                 >
-                  <option value="USER">Usuario</option>
-                  <option value="ADMIN">Administrador</option>
+                  {loadingRoles ? (
+                    <option value="">Cargando roles...</option>
+                  ) : (
+                    roles.map(r => (
+                      <option key={r.value} value={r.value}>{r.label}</option>
+                    ))
+                  )}
                 </select>
               </div>
 
@@ -571,6 +702,78 @@ export default function UsuariosClient({ initialUsers, initialSalons, role }: Pr
                   className="flex-1 rounded-xl bg-brand-primary px-4 py-3 text-xs font-bold text-white hover:bg-brand-primary-dark disabled:opacity-50 disabled:cursor-not-allowed smooth-transition shadow-sm"
                 >
                   {isPending ? 'Guardando...' : 'Crear Usuario'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Cambiar Contraseña */}
+      {passwordTargetUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs">
+          <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-6 mx-4 relative">
+            <div className="flex items-center justify-between mb-5 border-b border-slate-200 pb-3">
+              <h2 className="text-lg font-black text-slate-950 flex items-center gap-2">
+                <KeyRound className="w-5 h-5 text-amber-500" />
+                <span>Cambiar Contraseña</span>
+              </h2>
+              <button onClick={closePasswordModal} className="text-slate-500 hover:text-slate-800 rounded-lg p-1 hover:bg-slate-100 smooth-transition">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-500 font-medium mb-4">
+              Cambiando contraseña de <span className="font-black text-slate-900">{passwordTargetUser.fullName ?? passwordTargetUser.email}</span>
+            </p>
+
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-900 uppercase flex items-center gap-1.5">
+                  <Lock className="w-4 h-4 text-slate-500" />
+                  <span>Nueva contraseña *</span>
+                </label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Mínimo 8 caracteres"
+                  className={inputClass}
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-900 uppercase flex items-center gap-1.5">
+                  <Lock className="w-4 h-4 text-slate-500" />
+                  <span>Confirmar contraseña *</span>
+                </label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Repite la contraseña"
+                  className={inputClass}
+                  required
+                />
+              </div>
+
+              {passwordError && (
+                <p className="text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">
+                  {passwordError}
+                </p>
+              )}
+
+              <div className="flex gap-3 pt-3 border-t border-slate-200">
+                <button type="button" onClick={closePasswordModal} className="flex-1 rounded-xl border border-slate-300 px-4 py-3 text-xs font-bold text-slate-700 hover:bg-slate-100 smooth-transition">
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isPasswordPending || !newPassword || !confirmPassword}
+                  className="flex-1 rounded-xl bg-amber-500 px-4 py-3 text-xs font-bold text-white hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed smooth-transition shadow-sm"
+                >
+                  {isPasswordPending ? 'Aplicando...' : 'Aplicar'}
                 </button>
               </div>
             </form>
